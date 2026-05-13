@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'https://admin-cars-backend.onrender.com',
+  baseURL: 'https://admin-cars-backend.onrender.com/api/v1',
 })
 
 api.interceptors.request.use((config) => {
