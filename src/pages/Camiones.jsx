@@ -1,14 +1,17 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useCRUD } from '../hooks/useCRUD'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
-import { Truck, Plus, Pencil } from 'lucide-react'
+import { Truck, Plus, Pencil, Eye } from 'lucide-react'
 
-const empty = { marca: '', modelo: '', capacidad: '', estado: '1', fk_conductor: '' }
+
+const empty = { marca: '', modelo: '', capacidad: '', estado: '1', fk_conductor: '', placa: '', foto_url: '' }
 const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
 
 export default function Camiones() {
+  const navigate = useNavigate()
   const { data, loading, crear, actualizar, eliminar } = useCRUD('camiones')
   const { data: conductores } = useCRUD('conductores')
   const [modal, setModal] = useState(false)
@@ -73,6 +76,10 @@ export default function Camiones() {
                 className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">
                 Eliminar
               </button>
+              <button onClick={() => navigate(`/camiones/${c.id_camion}/resumen`)}
+                className="text-xs text-blue-500 border border-blue-200 hover:bg-blue-50 px-2 py-1 rounded-lg transition flex items-center gap-1">
+                <Eye size={11} /> Resumen
+              </button>
             </div>
           </td>
         </>)}
@@ -100,6 +107,14 @@ export default function Camiones() {
                 <option value="0">Inactivo</option>
               </select>
             </div>
+          </div>
+          <div>
+            <label className={labelCls}>Placa</label>
+            <input value={form.placa || ''} onChange={set('placa')} placeholder="Ej: ABC-123" className={inputCls} />
+          </div>
+          <div>
+            <label className={labelCls}>URL foto del camión</label>
+            <input value={form.foto_url || ''} onChange={set('foto_url')} placeholder="https://..." className={inputCls} />
           </div>
           <div>
             <label className={labelCls}>Conductor asignado</label>
