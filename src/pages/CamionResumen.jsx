@@ -29,7 +29,7 @@ export default function CamionResumen() {
   useEffect(() => { cargar() }, [id, fechas])
 
   if (loading) return <div className="flex items-center justify-center h-64 text-gray-400">Cargando...</div>
-  if (!data) return null
+  if (!data) return <div className="p-8 text-center text-gray-500 font-medium">No se encontraron datos o hubo un error al cargar el resumen.</div>
 
   const { camion, viajes, resumen } = data
 
