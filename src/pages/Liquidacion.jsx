@@ -1,216 +1,260 @@
-import { useEffect, useRef, useState } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import api from '../api/axios'
-import toast from 'react-hot-toast'
-import { ArrowLeft, Printer, Download } from 'lucide-react'
-import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import React, { useRef, useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import axios from '../api/axios'; // Ajusta la ruta según tu estructura
+import { ArrowLeft, Printer, FileText } from 'lucide-react';
 
-const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
-
-export default function Liquidacion() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const printRef = useRef()
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
+const Liquidacion = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const componentRef = useRef();
+  
+  const [viaje, setViaje] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const cargar = async () => {
+    const fetchViajeDetails = async () => {
       try {
-        const res = await api.get(`/liquidacion/${id}`)
-        setData(res.data.data)
-      } catch { toast.error('Error al cargar liquidación') }
-      finally { setLoading(false) }
-    }
-    cargar()
-  }, [id])
+        setLoading(true);
+        const response = await axios.get(`/viajes/${id}`);
+        setViaje(response.data);
+        setError(null);
+      } catch (err) {
+        console.error("Error al cargar la liquidación:", err);
+        setError("No se encontraron datos o hubo un error al cargar la liquidación.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  // ✅ SOLUCIÓN AL BOTÓN DE IMPRIMIR: Genera una ventana limpia con Tailwind sin congelar React
+    if (id) {
+      fetchViajeDetails();
+    }
+  }, [id]);
+
   const handlePrint = () => {
-    const contenido = printRef.current;
-    if (!contenido) return;
+    window.print();
+  };
 
-    const ventanaImpresion = window.open('', '_blank', 'width=850,height=700');
-    ventanaImpresion.document.write(`
-      <html>
-        <head>
-          <title>Liquidacion_Viaje_${id}</title>
-          <script src="https://cdn.tailwindcss.com"></script>
-          <style>
-            body { font-family: sans-serif; padding: 20px; background-color: white; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-          </style>
-        </head>
-        <body>
-          <div class="max-w-2xl mx-auto">
-            ${contenido.innerHTML}
-          </div>
-          <script>
-            window.onafterprint = function() { window.close(); };
-            setTimeout(function() { window.print(); window.close(); }, 600);
-          </script>
-        </body>
-      </html>
-    `);
-    ventanaImpresion.document.close();
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '80vh', fontSize: '1.2rem', color: '#666' }}>
+        Cargando datos de la liquidación...
+      </div>
+    );
   }
 
-  // ✅ SOLUCIÓN AL PDF: Forzamos dimensiones locales estables en html2canvas
-  const handlePDF = async () => {
-    const idCarga = toast.loading('Generando PDF...')
-    try {
-      const elemento = printRef.current;
-      if (!elemento) throw new Error("No hay elemento asignado");
-
-      const canvas = await html2canvas(elemento, { 
-        scale: 2, 
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      })
-      
-      const imgData = canvas.toDataURL('image/png')
-      const pdf = new jsPDF('p', 'mm', 'a4')
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-      
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save(`Liquidacion-Viaje-${id}.pdf`)
-      
-      toast.dismiss(idCarga)
-      toast.success('PDF generado ✓')
-    } catch (error) {
-      console.error(error)
-      toast.dismiss(idCarga)
-      toast.error('Error al generar PDF')
-    }
+  if (error || !viaje) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', color: '#dc3545', fontSize: '1.1rem' }}>
+        {error || "No se pudo cargar la información del viaje."}
+      </div>
+    );
   }
 
-  if (loading) return <div className="flex items-center justify-center h-64 text-gray-400">Cargando...</div>
-  if (!data) return null
+  // Cálculos financieros seguros
+  const valorFlete = Number(viaje.valor_flete) || 0;
+  const totalGastos = Array.isArray(viaje.gastos) 
+    ? viaje.gastos.reduce((sum, g) => sum + (Number(g.monto) || 0), 0) 
+    : 0;
+  const saldoCamion = valorFlete - totalGastos;
 
-  const { viaje, gastos, resumen } = data
+  // Formateador de moneda de Colombia
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('es-CO', {
+      style: 'currency',
+      currency: 'COP',
+      minimumFractionDigits: 0
+    }).format(value);
+  };
+
+  // Formateador de fechas
+  const formatDate = (dateString) => {
+    if (!dateString) return '—';
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? dateString : date.toLocaleDateString('es-CO');
+  };
 
   return (
-    <div className="p-4 lg:p-8">
+    <div style={{ padding: '24px', maxWidth: '1000px', margin: '0 auto' }}>
+      
+      {/* SECCIÓN DE BOTONES (Se oculta automáticamente al imprimir) */}
+      <style>{`
+        @media print {
+          .no-print {
+            display: none !important;
+          }
+          body {
+            background-color: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          /* FORZAR COLORES DE FONDO Y BORDES EN IMPRESIÓN Y PDF */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
 
-      {/* ACCIONES — no se imprimen */}
-      <div className="flex items-center justify-between mb-6">
-        <button onClick={() => navigate(`/viajes/${id}`)}
-          className="flex items-center gap-2 p-2 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-800 transition">
-          <ArrowLeft size={18} />
-        </button>
-        <div className="flex gap-3">
-          <button onClick={handlePrint}
-            className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-xl text-sm font-semibold transition">
-            <Printer size={15} /> Imprimir
+      <div className="no-print" style={{ display: 'table', width: '100%', marginBottom: '24px' }}>
+        <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+          <button 
+            onClick={() => navigate('/viajes')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', border: '1px solid #e2e8f0', backgroundColor: '#fff', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', color: '#4a5568', transition: 'all 0.2s' }}
+          >
+            <ArrowLeft size={18} /> Volver
           </button>
-          <button onClick={handlePDF}
-            className="flex items-center gap-2 bg-[#E87C1E] hover:bg-[#C4610E] text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow-lg shadow-[#E87C1E]/30">
-            <Download size={15} /> Exportar PDF
-          </button>
+        </div>
+        <div style={{ display: 'table-cell', textAlign: 'right', verticalAlign: 'middle' }}>
+          <div style={{ display: 'inline-flex', gap: '12px' }}>
+            <button 
+              onClick={handlePrint}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#fff', border: '1px solid #cbd5e1', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', color: '#334155' }}
+            >
+              <Printer size={18} /> Imprimir
+            </button>
+            <button 
+              onClick={handlePrint}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 20px', backgroundColor: '#ea580c', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', color: '#fff' }}
+            >
+              <FileText size={18} /> Exportar PDF
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* DOCUMENTO */}
-      <div ref={printRef} className="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-2xl mx-auto overflow-hidden">
-
-        {/* HEADER */}
-        <div className="bg-[#E87C1E] px-8 py-6 text-white">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-black tracking-widest">AdminCARS</h1>
-              <p className="text-orange-100 text-sm mt-1">Liquidación de Viaje</p>
-            </div>
-            <div className="text-right">
-              <p className="text-orange-100 text-xs uppercase tracking-wider">Viaje #</p>
-              <p className="text-3xl font-black">{viaje.id_viaje}</p>
-              {viaje.nro_guia && <p className="text-orange-100 text-sm">Guía: {viaje.nro_guia}</p>}
-            </div>
+      {/* RECUADRO DE LA LIQUIDACIÓN / FACTURA */}
+      <div 
+        ref={componentRef} 
+        style={{ 
+          backgroundColor: '#fff', 
+          borderRadius: '12px', 
+          boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)', 
+          border: '1px solid #e2e8f0',
+          overflow: 'hidden',
+          fontFamily: "'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
+        }}
+      >
+        {/* ENCABEZADO NARANJA REORGANIZADO */}
+        <div style={{ backgroundColor: '#ea580c', padding: '32px', color: '#fff', display: 'table', width: '100%', boxSizing: 'border-box' }}>
+          <div style={{ display: 'table-cell', verticalAlign: 'middle' }}>
+            <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 'bold', letterSpacing: '0.5px' }}>AdminCARS</h1>
+            <p style={{ margin: '4px 0 0 0', opacity: 0.9, fontSize: '15px' }}>Liquidación de Viaje</p>
+          </div>
+          <div style={{ display: 'table-cell', textAlign: 'right', verticalAlign: 'middle' }}>
+            <div style={{ fontSize: '13px', opacity: 0.9, textTransform: 'uppercase', fontWeight: '600' }}>Viaje #</div>
+            <div style={{ fontSize: '36px', fontWeight: 'bold', lineHeight: '1.1' }}>{viaje.id}</div>
+            {viaje.guia && <div style={{ fontSize: '14px', marginTop: '4px', opacity: 0.95 }}>Guía: {viaje.guia}</div>}
           </div>
         </div>
 
-        {/* INFO VIAJE */}
-        <div className="px-8 py-5 border-b border-gray-100">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider">Camión</p>
-              <p className="font-semibold text-gray-800">{viaje.placa} — {viaje.marca} {viaje.modelo}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider">Conductor</p>
-              <p className="font-semibold text-gray-800">{viaje.nombre_conductor}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider">Ruta</p>
-              <p className="font-semibold text-gray-800">{viaje.origen} → {viaje.destino}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider">Carga</p>
-              <p className="font-semibold text-gray-800">{viaje.producto_carga}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider">Fecha salida</p>
-              <p className="font-semibold text-gray-800">{fmtDate(viaje.fecha_salida)}</p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wider">Fecha llegada</p>
-              <p className="font-semibold text-gray-800">{fmtDate(viaje.fecha_llegada)}</p>
-            </div>
-          </div>
-        </div>
+        {/* CONTENIDO INTERNO */}
+        <div style={{ padding: '32px' }}>
+          
+          {/* TABLA DE DETALLES PRINCIPALES (Reemplaza flexbox para garantizar compatibilidad con impresión) */}
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '36px' }}>
+            <tbody>
+              <tr>
+                <td style={{ width: '50%', paddingBottom: '20px', verticalAlign: 'top' }}>
+                  <span style={{ display: 'block', fontSize: '12px', color: '#718096', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>Camión</span>
+                  <strong style={{ fontSize: '16px', color: '#1a202c' }}>— {viaje.nombre_camion || viaje.placa || 'No asignado'}</strong>
+                </td>
+                <td style={{ width: '50%', paddingBottom: '20px', verticalAlign: 'top' }}>
+                  <span style={{ display: 'block', fontSize: '12px', color: '#718096', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>Conductor</span>
+                  <strong style={{ fontSize: '16px', color: '#1a202c' }}>{viaje.nombre_conductor || 'No asignado'}</strong>
+                </td>
+              </tr>
+              <tr>
+                <td style={{ paddingBottom: '20px', verticalAlign: 'top' }}>
+                  <span style={{ display: 'block', fontSize: '12px', color: '#718096', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>Ruta</span>
+                  <span style={{ fontSize: '16px', color: '#1a202c', fontWeight: '500' }}>{viaje.origen} → {viaje.destino}</span>
+                </td>
+                <td style={{ paddingBottom: '20px', verticalAlign: 'top' }}>
+                  <span style={{ display: 'block', fontSize: '12px', color: '#718096', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>Carga</span>
+                  <span style={{ fontSize: '16px', color: '#1a202c', fontWeight: '500' }}>{viaje.descripcion_carga || '—'}</span>
+                </td>
+              </tr>
+              <tr>
+                <td style={{ verticalAlign: 'top' }}>
+                  <span style={{ display: 'block', fontSize: '12px', color: '#718096', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>Fecha Salida</span>
+                  <span style={{ fontSize: '15px', color: '#1a202c' }}>{formatDate(viaje.fecha_salida)}</span>
+                </td>
+                <td style={{ verticalAlign: 'top' }}>
+                  <span style={{ display: 'block', fontSize: '12px', color: '#718096', textTransform: 'uppercase', fontWeight: '600', marginBottom: '4px' }}>Fecha Llegada</span>
+                  <span style={{ fontSize: '15px', color: '#1a202c' }}>{formatDate(viaje.fecha_llegada)}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
 
-        {/* GASTOS */}
-        <div className="px-8 py-5">
-          <h2 className="font-bold text-gray-700 text-sm uppercase tracking-wider mb-3">Detalle de gastos</h2>
-          <table className="w-full">
+          {/* TABLA DE DETALLE DE GASTOS */}
+          <h3 style={{ fontSize: '16px', color: '#1a202c', textTransform: 'uppercase', margin: '0 0 12px 0', borderBottom: '2px solid #e2e8f0', paddingBottom: '8px', letterSpacing: '0.5px' }}>
+            Detalle de Gastos
+          </h3>
+          
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '32px' }}>
             <thead>
-              <tr className="border-b-2 border-gray-200">
-                <th className="text-left text-xs text-gray-400 uppercase pb-2 font-semibold">Tipo</th>
-                <th className="text-left text-xs text-gray-400 uppercase pb-2 font-semibold">Descripción</th>
-                <th className="text-right text-xs text-gray-400 uppercase pb-2 font-semibold">Monto</th>
+              <tr style={{ borderBottom: '1px solid #cbd5e1' }}>
+                <th style={{ textAlign: 'left', padding: '10px 0', fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Tipo</th>
+                <th style={{ textAlign: 'left', padding: '10px 0', fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Descripción / Detalle</th>
+                <th style={{ textAlign: 'right', padding: '10px 0', fontSize: '12px', color: '#64748b', textTransform: 'uppercase' }}>Monto</th>
               </tr>
             </thead>
             <tbody>
-              {gastos.map((g, i) => (
-                <tr key={i} className="border-b border-gray-50">
-                  <td className="py-2 text-sm text-gray-700">{g.tipo_gasto}</td>
-                  <td className="py-2 text-sm text-gray-400">{g.categoria || '—'}</td>
-                  <td className="py-2 text-sm text-right font-semibold text-gray-800">{cop(g.monto)}</td>
+              {Array.isArray(viaje.gastos) && viaje.gastos.length > 0 ? (
+                viaje.gastos.map((gasto, index) => (
+                  <tr key={index} style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <td style={{ padding: '12px 0', fontSize: '14px', color: '#334155', fontWeight: '500' }}>{gasto.tipo_gasto}</td>
+                    <td style={{ padding: '12px 0', fontSize: '14px', color: '#64748b' }}>{gasto.descripcion || '—'}</td>
+                    <td style={{ padding: '12px 0', fontSize: '14px', color: '#334155', textAlign: 'right', fontWeight: '500' }}>{formatCurrency(gasto.monto)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="3" style={{ padding: '20px 0', fontSize: '14px', color: '#94a3b8', textAlign: 'center' }}>
+                    No se registraron gastos en este viaje.
+                  </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
-        </div>
 
-        {/* RESUMEN FINAL */}
-        <div className="px-8 py-5 bg-gray-50 border-t border-gray-200">
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Valor del flete</span>
-              <span className="font-bold text-gray-800">{cop(resumen.valor_flete)}</span>
+          {/* BALANCE FINANCIERO (CON ESTILO GRIS TAL CUAL TU IMAGEN) */}
+          <div style={{ backgroundColor: '#f8fafc', borderRadius: '8px', padding: '20px', marginLeft: 'auto', maxWidth: '450px', border: '1px solid #f1f5f9' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <tbody>
+                <tr>
+                  <td style={{ padding: '6px 0', fontSize: '14px', color: '#475569' }}>Valor del flete</td>
+                  <td style={{ padding: '6px 0', fontSize: '14px', color: '#1e293b', textAlign: 'right', fontWeight: '600' }}>{formatCurrency(valorFlete)}</td>
+                </tr>
+                <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <td style={{ padding: '6px 0', fontSize: '14px', color: '#b91c1c' }}>Total gastos</td>
+                  <td style={{ padding: '6px 0', fontSize: '14px', color: '#b91c1c', textAlign: 'right', fontWeight: '600' }}>— {formatCurrency(totalGastos)}</td>
+                </tr>
+                <tr>
+                  <td style={{ padding: '14px 0 0 0', fontSize: '16px', color: '#0f172a', fontWeight: 'bold' }}>Saldo camión</td>
+                  <td style={{ padding: '14px 0 0 0', fontSize: '18px', color: '#16a34a', textAlign: 'right', fontWeight: 'bold' }}>{formatCurrency(saldoCamion)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          {/* PIE DE PÁGINA: FIRMA Y FECHA DE GENERACIÓN */}
+          <div style={{ marginTop: '60px', display: 'table', width: '100%', fontSize: '13px', color: '#64748b' }}>
+            <div style={{ display: 'table-cell', verticalAlign: 'bottom', width: '50%' }}>
+              Generado por AdminCARS — {new Date().toLocaleDateString('es-CO')}
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-500">Total gastos</span>
-              <span className="font-bold text-red-500">— {cop(resumen.total_gastos)}</span>
-            </div>
-            <div className="flex justify-between text-base border-t-2 border-gray-300 pt-2 mt-2">
-              <span className="font-black text-gray-800">Saldo camión</span>
-              <span className={`font-black text-lg ${resumen.saldo_camion >= 0 ? 'text-green-600' : 'text-red-500'}`}>
-                {cop(resumen.saldo_camion)}
-              </span>
+            <div style={{ display: 'table-cell', textAlign: 'right', verticalAlign: 'bottom', width: '50%' }}>
+              <span style={{ display: 'inline-block', width: '200px', borderBottom: '1px solid #94a3b8', marginBottom: '4px' }}></span>
+              <div style={{ marginRight: '40px' }}>Firma</div>
             </div>
           </div>
-        </div>
 
-        {/* FOOTER */}
-        <div className="px-8 py-4 border-t border-gray-100 flex justify-between items-center">
-          <p className="text-xs text-gray-400">Generado por AdminCARS — {new Date().toLocaleDateString('es-CO')}</p>
-          <p className="text-xs text-gray-400">Firma: _______________</p>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
+
+export default Liquidacion;
