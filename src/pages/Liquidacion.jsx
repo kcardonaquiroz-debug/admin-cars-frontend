@@ -27,22 +27,63 @@ export default function Liquidacion() {
     cargar()
   }, [id])
 
-  const handlePrint = () => window.print()
+  // ✅ SOLUCIÓN AL BOTÓN DE IMPRIMIR: Genera una ventana limpia con Tailwind sin congelar React
+  const handlePrint = () => {
+    const contenido = printRef.current;
+    if (!contenido) return;
 
+    const ventanaImpresion = window.open('', '_blank', 'width=850,height=700');
+    ventanaImpresion.document.write(`
+      <html>
+        <head>
+          <title>Liquidacion_Viaje_${id}</title>
+          <script src="https://cdn.tailwindcss.com"></script>
+          <style>
+            body { font-family: sans-serif; padding: 20px; background-color: white; }
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+          </style>
+        </head>
+        <body>
+          <div class="max-w-2xl mx-auto">
+            ${contenido.innerHTML}
+          </div>
+          <script>
+            window.onafterprint = function() { window.close(); };
+            setTimeout(function() { window.print(); window.close(); }, 600);
+          </script>
+        </body>
+      </html>
+    `);
+    ventanaImpresion.document.close();
+  }
+
+  // ✅ SOLUCIÓN AL PDF: Forzamos dimensiones locales estables en html2canvas
   const handlePDF = async () => {
-    toast.loading('Generando PDF...')
+    const idCarga = toast.loading('Generando PDF...')
     try {
-      const canvas = await html2canvas(printRef.current, { scale: 2, useCORS: true })
+      const elemento = printRef.current;
+      if (!elemento) throw new Error("No hay elemento asignado");
+
+      const canvas = await html2canvas(elemento, { 
+        scale: 2, 
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      })
+      
       const imgData = canvas.toDataURL('image/png')
       const pdf = new jsPDF('p', 'mm', 'a4')
       const pdfWidth = pdf.internal.pageSize.getWidth()
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      
       pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
       pdf.save(`Liquidacion-Viaje-${id}.pdf`)
-      toast.dismiss()
+      
+      toast.dismiss(idCarga)
       toast.success('PDF generado ✓')
-    } catch {
-      toast.dismiss()
+    } catch (error) {
+      console.error(error)
+      toast.dismiss(idCarga)
       toast.error('Error al generar PDF')
     }
   }
@@ -56,7 +97,7 @@ export default function Liquidacion() {
     <div className="p-4 lg:p-8">
 
       {/* ACCIONES — no se imprimen */}
-      <div className="flex items-center justify-between mb-6 print:hidden">
+      <div className="flex items-center justify-between mb-6">
         <button onClick={() => navigate(`/viajes/${id}`)}
           className="flex items-center gap-2 p-2 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-800 transition">
           <ArrowLeft size={18} />
@@ -170,16 +211,6 @@ export default function Liquidacion() {
           <p className="text-xs text-gray-400">Firma: _______________</p>
         </div>
       </div>
-
-      {/* ESTILOS DE IMPRESIÓN */}
-      <style>{`
-        @media print {
-          body * { visibility: hidden; }
-          #root * { visibility: hidden; }
-          [ref="printRef"], [ref="printRef"] * { visibility: visible; }
-          .print\\:hidden { display: none !important; }
-        }
-      `}</style>
     </div>
   )
 }
