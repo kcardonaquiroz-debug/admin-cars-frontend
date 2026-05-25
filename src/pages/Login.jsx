@@ -19,7 +19,7 @@ export default function Login() {
       const res = await api.post('/auth/login', form)
       login(res.data.data)
       toast.success('¡Bienvenido!')
-      navigate('/')
+      navigate('/app')
     } catch (err) {
       toast.error(err.response?.data?.message || 'Credenciales incorrectas')
     } finally {
