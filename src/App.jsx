@@ -13,6 +13,7 @@ import Gastos from './pages/Gastos'
 import Facturas from './pages/Facturas'
 import Mantenimientos from './pages/Mantenimientos'
 import Liquidacion from './pages/Liquidacion'
+import LandingPage from './pages/LandingPage'
 
 function PrivateRoute({ children }) {
   const { usuario } = useAuth()
@@ -42,6 +43,8 @@ export default function App() {
         <Route path="gastos" element={<AdminRoute><Gastos /></AdminRoute>} />
         <Route path="facturas" element={<AdminRoute><Facturas /></AdminRoute>} />
         <Route path="mantenimientos" element={<AdminRoute><Mantenimientos /></AdminRoute>} />
+        <Route path="landingpage" element={<AdminRoute><LandingPage /></AdminRoute>} />
+
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
