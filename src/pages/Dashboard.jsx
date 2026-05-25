@@ -33,11 +33,11 @@ export default function Dashboard() {
   }, [])
 
   const cards = [
-    { label: 'Camiones', value: stats.camiones, icon: Truck, to: '/camiones', bg: 'bg-orange-50', border: 'border-orange-100', icon_bg: 'bg-[#E87C1E]' },
-    { label: 'Conductores', value: stats.conductores, icon: Users, to: '/conductores', bg: 'bg-blue-50', border: 'border-blue-100', icon_bg: 'bg-blue-500' },
-    { label: 'Viajes', value: stats.viajes, icon: MapPin, to: '/viajes', bg: 'bg-green-50', border: 'border-green-100', icon_bg: 'bg-green-500' },
-    { label: 'Gastos totales', value: stats.gastos ? cop(stats.gastos) : '—', icon: DollarSign, to: '/gastos', bg: 'bg-yellow-50', border: 'border-yellow-100', icon_bg: 'bg-yellow-500' },
-    { label: 'Mantenimientos', value: stats.mantenimientos, icon: Wrench, to: '/mantenimientos', bg: 'bg-purple-50', border: 'border-purple-100', icon_bg: 'bg-purple-500' },
+    { label: 'Camiones', value: stats.camiones, icon: Truck, to: '/app/camiones', bg: 'bg-orange-50', border: 'border-orange-100', icon_bg: 'bg-[#E87C1E]' },
+    { label: 'Conductores', value: stats.conductores, icon: Users, to: '/app/conductores', bg: 'bg-blue-50', border: 'border-blue-100', icon_bg: 'bg-blue-500' },
+    { label: 'Viajes', value: stats.viajes, icon: MapPin, to: '/app/viajes', bg: 'bg-green-50', border: 'border-green-100', icon_bg: 'bg-green-500' },
+    { label: 'Gastos totales', value: stats.gastos ? cop(stats.gastos) : '—', icon: DollarSign, to: '/app/gastos', bg: 'bg-yellow-50', border: 'border-yellow-100', icon_bg: 'bg-yellow-500' },
+    { label: 'Mantenimientos', value: stats.mantenimientos, icon: Wrench, to: '/app/mantenimientos', bg: 'bg-purple-50', border: 'border-purple-100', icon_bg: 'bg-purple-500' },
   ]
 
   return (
