@@ -13,17 +13,39 @@ import Gastos from './pages/Gastos'
 import Facturas from './pages/Facturas'
 import Mantenimientos from './pages/Mantenimientos'
 import Liquidacion from './pages/Liquidacion'
-import LandingPage from './pages/LandingPage' // <-- Tu página de bienvenida
+import LandingPage from './pages/LandingPage'
+
+// Componente auxiliar para manejar redirecciones inteligentes en rutas inexistentes
+function FallbackRedirect() {
+  const { usuario } = useAuth()
+  // Si está logueado, cualquier error de ruta lo deja dentro del panel, si no, va a la landing
+  return usuario ? <Navigate to="/app" /> : <Navigate to="/" />
+}
 
 function PrivateRoute({ children }) {
-  const { usuario } = useAuth()
+  const { usuario, loading } = useAuth() // Añadido loading para evitar parpadeos y expulsiones
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-bebas tracking-widest text-2xl">
+        Cargando AdminCARS...
+      </div>
+    )
+  }
+  
   return usuario ? children : <Navigate to="/login" />
 }
 
 function AdminRoute({ children }) {
-  const { usuario } = useAuth()
+  const { usuario, loading } = useAuth()
+  
+  if (loading) return null
   if (!usuario) return <Navigate to="/login" />
-  if (usuario.rol === 'Conductor') return <Navigate to="/mis-viajes" />
+  
+  // CORRECCIÓN: Si es Conductor, lo mandamos al dashboard interno de la app, 
+  // ya que "/mis-viajes" de forma independiente no existe y causaba la expulsión.
+  if (usuario.rol === 'Conductor') return <Navigate to="/app" />
+  
   return children
 }
 
@@ -31,13 +53,11 @@ export default function App() {
   return (
     <Routes>
       {/* ================= RUTAS PÚBLICAS ================= */}
-      {/* Ahora la raíz "/" muestra directamente la LandingPage de manera pública */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
       {/* ================= RUTAS PRIVADAS (PANEL) ================= */}
-      {/* Agrupamos la aplicación protegida bajo el prefijo "/app" */}
       <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="viajes" element={<Viajes />} />
@@ -53,8 +73,8 @@ export default function App() {
         <Route path="mantenimientos" element={<AdminRoute><Mantenimientos /></AdminRoute>} />
       </Route>
 
-      {/* Comodín: cualquier ruta desconocida redirige a la Landing Page */}
-      <Route path="*" element={<Navigate to="/" />} />
+      {/* Comodín: Redirección inteligente controlada */}
+      <Route path="*" element={<FallbackRedirect />} />
     </Routes>
   )
 }
