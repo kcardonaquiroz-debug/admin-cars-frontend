@@ -13,7 +13,7 @@ import Gastos from './pages/Gastos'
 import Facturas from './pages/Facturas'
 import Mantenimientos from './pages/Mantenimientos'
 import Liquidacion from './pages/Liquidacion'
-import LandingPage from './pages/LandingPage'
+import LandingPage from './pages/LandingPage' // <-- Tu página de bienvenida
 
 function PrivateRoute({ children }) {
   const { usuario } = useAuth()
@@ -30,22 +30,30 @@ function AdminRoute({ children }) {
 export default function App() {
   return (
     <Routes>
+      {/* ================= RUTAS PÚBLICAS ================= */}
+      {/* Ahora la raíz "/" muestra directamente la LandingPage de manera pública */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<PrivateRoute><Layout /></PrivateRoute>}>
+
+      {/* ================= RUTAS PRIVADAS (PANEL) ================= */}
+      {/* Agrupamos la aplicación protegida bajo el prefijo "/app" */}
+      <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="viajes" element={<Viajes />} />
         <Route path="viajes/:id" element={<ViajeDetalle />} />
         <Route path="viajes/:id/liquidacion" element={<Liquidacion />} />
+        
+        {/* Rutas exclusivas de Administrador */}
         <Route path="camiones" element={<AdminRoute><Camiones /></AdminRoute>} />
         <Route path="camiones/:id/resumen" element={<AdminRoute><CamionResumen /></AdminRoute>} />
         <Route path="conductores" element={<AdminRoute><Conductores /></AdminRoute>} />
         <Route path="gastos" element={<AdminRoute><Gastos /></AdminRoute>} />
         <Route path="facturas" element={<AdminRoute><Facturas /></AdminRoute>} />
         <Route path="mantenimientos" element={<AdminRoute><Mantenimientos /></AdminRoute>} />
-        <Route path="landingpage" element={<AdminRoute><LandingPage /></AdminRoute>} />
-
       </Route>
+
+      {/* Comodín: cualquier ruta desconocida redirige a la Landing Page */}
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>
   )
