@@ -83,7 +83,7 @@ export default function ViajeDetalle() {
       }
       setModal(false); setForm(emptyGasto); setEditando(null)
       cargar()
-    } catch { toast.error('Error al guardar') }
+    } catch (e) { toast.error(e.response?.data?.error || 'Error al guardar') }
   }
 
   const eliminarGasto = async (gastoId) => {
@@ -92,7 +92,7 @@ export default function ViajeDetalle() {
       await api.delete(`/gastos/${gastoId}`)
       toast.success('Eliminado')
       cargar()
-    } catch { toast.error('Error al eliminar') }
+    } catch (e) { toast.error(e.response?.data?.error || 'Error al eliminar') }
   }
 
   if (loading) return <div className="flex items-center justify-center h-64 text-gray-400">Cargando...</div>

@@ -48,8 +48,8 @@ export function useCRUD(endpoint) {
       await api.delete(`/${endpoint}/${id}`)
       toast.success('Eliminado correctamente')
       fetchAll()
-    } catch {
-      toast.error('Error al eliminar')
+    } catch (e) {
+      toast.error(e.response?.data?.error || 'Error al eliminar')
     }
   }
 
