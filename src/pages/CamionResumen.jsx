@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Truck, MapPin, DollarSign, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Truck, MapPin, DollarSign, TrendingUp, Camera } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
@@ -10,8 +10,10 @@ const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
 export default function CamionResumen() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const fileRef = useRef(null)
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [subiendo, setSubiendo] = useState(false)
   const [fechas, setFechas] = useState({
     inicio: new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0, 10),
     fin: new Date().toISOString().slice(0, 10)
@@ -27,6 +29,31 @@ export default function CamionResumen() {
   }
 
   useEffect(() => { cargar() }, [id, fechas])
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) { toast.error('Selecciona una imagen válida'); return }
+    if (file.size > 5 * 1024 * 1024) { toast.error('La imagen supera 5MB'); return }
+    setSubiendo(true)
+    try {
+      const fd = new FormData()
+      fd.append('foto', file)
+      const res = await api.post(`/camiones/${id}/upload`, fd, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      setData(prev => ({
+        ...prev,
+        camion: { ...prev.camion, foto_url: res.data.data.foto_url }
+      }))
+      toast.success('Foto actualizada ✓')
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Error al subir imagen')
+    } finally {
+      setSubiendo(false)
+      e.target.value = ''
+    }
+  }
 
   if (loading) return <div className="flex items-center justify-center h-64 text-gray-400">Cargando...</div>
   if (!data) return <div className="p-8 text-center text-gray-500 font-medium">No se encontraron datos o hubo un error al cargar el resumen.</div>
@@ -51,13 +78,22 @@ export default function CamionResumen() {
       {/* FOTO + FILTROS */}
       <div className="grid lg:grid-cols-3 gap-4">
         <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
-          {camion.foto_url ? (
-            <img src={camion.foto_url} alt={camion.placa} className="w-full h-48 object-cover" />
-          ) : (
-            <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
-              <Truck size={48} className="text-gray-300" />
-            </div>
-          )}
+          <div className="relative group">
+            {camion.foto_url ? (
+              <img src={camion.foto_url} alt={camion.placa} className="w-full h-48 object-cover" />
+            ) : (
+              <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+                <Truck size={48} className="text-gray-300" />
+              </div>
+            )}
+            <button onClick={() => fileRef.current?.click()} disabled={subiendo}
+              className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/40 transition-colors cursor-pointer">
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-gray-800 rounded-xl px-3 py-2 text-xs font-semibold flex items-center gap-1.5 shadow-lg">
+                <Camera size={14} /> {subiendo ? 'Subiendo...' : camion.foto_url ? 'Cambiar foto' : 'Subir foto'}
+              </div>
+            </button>
+            <input ref={fileRef} type="file" accept="image/*" onChange={handleUpload} className="hidden" />
+          </div>
           <div className="p-4">
             <p className="font-bold text-gray-800">{camion.placa}</p>
             <p className="text-sm text-gray-400">{camion.marca} {camion.modelo} · {camion.capacidad} ton</p>
