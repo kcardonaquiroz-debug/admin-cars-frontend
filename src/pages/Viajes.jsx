@@ -92,7 +92,7 @@ export default function Viajes() {
           </td>
           <td className="px-4 py-3">
             <div className="flex gap-2">
-              <button onClick={() => navigate(`/viajes/${v.id_viaje}`)}
+              <button onClick={() => navigate(`/app/viajes/${v.id_viaje}`)}
                 className="text-xs text-blue-500 border border-blue-200 hover:bg-blue-50 px-2 py-1 rounded-lg transition flex items-center gap-1">
                 <Eye size={11} /> Ver
               </button>

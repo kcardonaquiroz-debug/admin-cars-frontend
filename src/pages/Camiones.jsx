@@ -76,7 +76,7 @@ export default function Camiones() {
                 className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">
                 Eliminar
               </button>
-              <button onClick={() => navigate(`/camiones/${c.id_camion}/resumen`)}
+              <button onClick={() => navigate(`/app/camiones/${c.id_camion}/resumen`)}
                 className="text-xs text-blue-500 border border-blue-200 hover:bg-blue-50 px-2 py-1 rounded-lg transition flex items-center gap-1">
                 <Eye size={11} /> Resumen
               </button>

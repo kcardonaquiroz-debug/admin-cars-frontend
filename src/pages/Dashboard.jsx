@@ -81,7 +81,7 @@ export default function Dashboard() {
           <h2 className="font-bold text-gray-800 flex items-center gap-2">
             <TrendingUp size={18} className="text-[#E87C1E]" /> Últimos viajes
           </h2>
-          <Link to="/viajes" className="text-xs text-[#E87C1E] hover:text-[#C4610E] font-semibold transition">Ver todos →</Link>
+          <Link to="/app/viajes" className="text-xs text-[#E87C1E] hover:text-[#C4610E] font-semibold transition">Ver todos →</Link>
         </div>
         <div className="grid gap-3">
           {loading ? (
@@ -120,7 +120,7 @@ export default function Dashboard() {
             <p className="text-gray-800 font-bold text-lg">¿Nuevo viaje hoy?</p>
             <p className="text-gray-500 text-sm">Registra tu próxima ruta en segundos</p>
           </div>
-          <Link to="/viajes"
+          <Link to="/app/viajes"
             className="bg-[#E87C1E] hover:bg-[#C4610E] text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-[#E87C1E]/30 shrink-0">
             + Nuevo viaje
           </Link>

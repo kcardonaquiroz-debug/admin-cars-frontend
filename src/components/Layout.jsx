@@ -7,18 +7,18 @@ import {
 } from 'lucide-react'
 
 const navAdmin = [
-  { to: '/', label: 'Resumen', icon: LayoutDashboard, end: true },
-  { to: '/viajes', label: 'Viajes', icon: MapPin },
-  { to: '/camiones', label: 'Camiones', icon: Truck },
-  { to: '/conductores', label: 'Conductores', icon: Users },
-  { to: '/gastos', label: 'Gastos', icon: DollarSign },
-  { to: '/facturas', label: 'Facturas', icon: FileText },
-  { to: '/mantenimientos', label: 'Mantenimientos', icon: Wrench },
+  { to: '/app', label: 'Resumen', icon: LayoutDashboard, end: true },
+  { to: '/app/viajes', label: 'Viajes', icon: MapPin },
+  { to: '/app/camiones', label: 'Camiones', icon: Truck },
+  { to: '/app/conductores', label: 'Conductores', icon: Users },
+  { to: '/app/gastos', label: 'Gastos', icon: DollarSign },
+  { to: '/app/facturas', label: 'Facturas', icon: FileText },
+  { to: '/app/mantenimientos', label: 'Mantenimientos', icon: Wrench },
 ]
 
 const navConductor = [
-  { to: '/', label: 'Mi resumen', icon: LayoutDashboard, end: true },
-  { to: '/viajes', label: 'Mis viajes', icon: MapPin },
+  { to: '/app', label: 'Mi resumen', icon: LayoutDashboard, end: true },
+  { to: '/app/viajes', label: 'Mis viajes', icon: MapPin },
 ]
 
 export default function Layout() {

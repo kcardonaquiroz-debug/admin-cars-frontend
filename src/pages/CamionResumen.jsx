@@ -38,7 +38,7 @@ export default function CamionResumen() {
 
       {/* HEADER */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/camiones')}
+        <button onClick={() => navigate('/app/camiones')}
           className="p-2 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-800 transition">
           <ArrowLeft size={18} />
         </button>
@@ -120,7 +120,7 @@ export default function CamionResumen() {
             <tbody>
               {viajes.map(v => (
                 <tr key={v.id_viaje} className="border-b border-gray-50 last:border-0 hover:bg-orange-50/30 transition cursor-pointer"
-                  onClick={() => navigate(`/viajes/${v.id_viaje}`)}>
+                  onClick={() => navigate(`/app/viajes/${v.id_viaje}`)}>
                   <td className="px-4 py-3 text-xs text-gray-400">#{v.id_viaje}</td>
                   <td className="px-4 py-3 text-sm font-semibold text-gray-800">{v.origen} → {v.destino}</td>
                   <td className="px-4 py-3 text-sm text-gray-500">{v.producto_carga}</td>

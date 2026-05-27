@@ -103,7 +103,7 @@ export default function ViajeDetalle() {
 
       {/* BACK + HEADER */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/viajes')}
+        <button onClick={() => navigate('/app/viajes')}
           className="p-2 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-800 hover:shadow-sm transition">
           <ArrowLeft size={18} />
         </button>
@@ -155,7 +155,7 @@ export default function ViajeDetalle() {
         </div>
         {!esConductor && (
           <div className="px-5 py-3 border-t border-gray-100 flex justify-end">
-            <button onClick={() => navigate(`/viajes/${id}/liquidacion`)}
+            <button onClick={() => navigate(`/app/viajes/${id}/liquidacion`)}
               className="flex items-center gap-2 bg-[#E87C1E] hover:bg-[#C4610E] text-white px-4 py-2 rounded-xl text-sm font-semibold transition shadow-md shadow-[#E87C1E]/20">
               <FileText size={14} /> Ver liquidación completa / PDF
             </button>

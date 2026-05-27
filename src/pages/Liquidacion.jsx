@@ -235,7 +235,7 @@ export default function Liquidacion() {
 
       {/* ACCIONES */}
       <div className="flex items-center justify-between mb-6">
-        <button onClick={() => navigate(`/viajes/${id}`)}
+        <button onClick={() => navigate(`/app/viajes/${id}`)}
           className="flex items-center gap-2 p-2 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-800 transition">
           <ArrowLeft size={18} />
         </button>

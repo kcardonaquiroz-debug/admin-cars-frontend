@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useCRUD } from '../hooks/useCRUD'
 import Modal from '../components/Modal'
+import toast from 'react-hot-toast'
 import { DollarSign, Plus, ChevronDown, Pencil } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
