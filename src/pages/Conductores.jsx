@@ -51,7 +51,7 @@ export default function Conductores() {
       </div>
 
       <Table
-        columns={['#', 'Nombre', 'Teléfono', 'Licencia', 'Vence', '']}
+        columns={['#', 'Nombre', 'Teléfono', 'Licencia', 'Vence', 'Estado', '']}
         data={data} loading={loading}
         renderRow={(c) => {
           const vigente = new Date(c.licencia_vence) > new Date()
@@ -66,12 +66,15 @@ export default function Conductores() {
               </span>
             </td>
             <td className="px-4 py-3">
+              <span className="bg-green-100 text-green-600 text-xs px-2.5 py-1 rounded-full font-semibold">Activo</span>
+            </td>
+            <td className="px-4 py-3">
               <div className="flex gap-2">
                 <button onClick={() => abrir(c)}
                   className="text-xs text-[#E87C1E] border border-[#E87C1E]/30 hover:bg-[#E87C1E]/10 px-2 py-1 rounded-lg transition flex items-center gap-1">
                   <Pencil size={11} /> Editar
                 </button>
-                <button onClick={() => eliminar(c.id_conductor)}
+                <button onClick={() => eliminar(c.id_conductor, '¿Desactivar este conductor?')}
                   className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">
                   Eliminar
                 </button>

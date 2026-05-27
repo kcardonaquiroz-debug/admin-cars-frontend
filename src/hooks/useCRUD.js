@@ -42,8 +42,8 @@ export function useCRUD(endpoint) {
     }
   }
 
-  const eliminar = async (id) => {
-    if (!confirm('¿Eliminar este registro?')) return
+  const eliminar = async (id, confirmMsg) => {
+    if (!confirm(confirmMsg || '¿Eliminar este registro?')) return
     try {
       await api.delete(`/${endpoint}/${id}`)
       toast.success('Eliminado correctamente')
