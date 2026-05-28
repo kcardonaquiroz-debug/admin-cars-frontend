@@ -182,7 +182,7 @@ export default function ViajeDetalle() {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-100">
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase">Tipo</th>
-                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase">Categoría</th>
+                <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase">Detalle</th>
                 <th className="px-4 py-2.5 text-left text-xs font-semibold text-gray-400 uppercase">Monto</th>
                 {!esConductor && <th className="px-4 py-2.5"></th>}
               </tr>
