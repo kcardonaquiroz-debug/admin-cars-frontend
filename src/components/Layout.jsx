@@ -3,7 +3,8 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import {
   LayoutDashboard, Truck, Users, MapPin,
-  DollarSign, FileText, Wrench, LogOut, Menu, X
+  DollarSign, FileText, Wrench, BarChart3,
+  LogOut, Menu, X
 } from 'lucide-react'
 
 const navAdmin = [
@@ -14,6 +15,7 @@ const navAdmin = [
   { to: '/app/gastos', label: 'Gastos', icon: DollarSign },
   { to: '/app/facturas', label: 'Facturas', icon: FileText },
   { to: '/app/mantenimientos', label: 'Mantenimientos', icon: Wrench },
+  { to: '/app/analisis', label: 'Análisis', icon: BarChart3 },
 ]
 
 const navConductor = [

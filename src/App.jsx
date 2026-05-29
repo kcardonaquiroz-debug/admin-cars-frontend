@@ -13,6 +13,7 @@ import Gastos from './pages/Gastos'
 import Facturas from './pages/Facturas'
 import Mantenimientos from './pages/Mantenimientos'
 import Liquidacion from './pages/Liquidacion'
+import Analisis from './pages/Analisis'
 import LandingPage from './pages/LandingPage'
 
 // Componente auxiliar para manejar redirecciones inteligentes en rutas inexistentes
@@ -71,6 +72,7 @@ export default function App() {
         <Route path="gastos" element={<AdminRoute><Gastos /></AdminRoute>} />
         <Route path="facturas" element={<AdminRoute><Facturas /></AdminRoute>} />
         <Route path="mantenimientos" element={<AdminRoute><Mantenimientos /></AdminRoute>} />
+        <Route path="analisis" element={<AdminRoute><Analisis /></AdminRoute>} />
       </Route>
 
       {/* Comodín: Redirección inteligente controlada */}
