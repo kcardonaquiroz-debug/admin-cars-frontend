@@ -6,12 +6,35 @@ import { Truck, Users, MapPin, DollarSign, Wrench, TrendingUp } from 'lucide-rea
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
 
+const CACHE_KEY = 'snapshot_dashboard'
+
+const getCache = () => {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch { return null }
+}
+
+const setCache = (stats, viajes) => {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ stats, viajes }))
+  } catch { }
+}
+
 export default function Dashboard() {
   const [stats, setStats] = useState({})
   const [viajes, setViajes] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const cached = getCache()
+    if (cached) {
+      setStats(cached.stats)
+      setViajes(cached.viajes)
+      setLoading(false)
+      return
+    }
     const load = async () => {
       try {
         const [cam, con, via, gas, mant] = await Promise.all([
@@ -19,14 +42,17 @@ export default function Dashboard() {
           api.get('/viajes'), api.get('/gastos'), api.get('/mantenimientos')
         ])
         const get = (r) => r.data.data || r.data
-        setStats({
+        const newStats = {
           camiones: get(cam).length,
           conductores: get(con).length,
           viajes: get(via).length,
           gastos: get(gas).reduce((s, g) => s + (g.monto || 0), 0),
           mantenimientos: get(mant).length,
-        })
-        setViajes(get(via).slice(-5).reverse())
+        }
+        const newViajes = get(via).slice(-5).reverse()
+        setStats(newStats)
+        setViajes(newViajes)
+        setCache(newStats, newViajes)
       } catch { } finally { setLoading(false) }
     }
     load()

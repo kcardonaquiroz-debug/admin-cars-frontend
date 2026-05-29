@@ -1,28 +1,74 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import api from '../api/axios'
 import {
   BarChart3, TrendingUp, TrendingDown, DollarSign, Truck,
   Users, MapPin, Wrench, Fuel, Calendar, AlertTriangle,
   Award, PieChart, Activity, Route, Clock, Percent,
-  CreditCard, FileText, ListChecks
+  CreditCard, FileText, ListChecks, RefreshCw
 } from 'lucide-react'
 
+const CACHE_KEY = 'analisis_snapshot'
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
+
+const getCache = () => {
+  try {
+    const raw = sessionStorage.getItem(CACHE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw)
+  } catch { return null }
+}
+
+const setCache = (data) => {
+  try {
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({
+      data,
+      timestamp: new Date().toISOString()
+    }))
+  } catch { }
+}
+
+const fmtHora = (iso) => {
+  if (!iso) return ''
+  return new Date(iso).toLocaleString('es-CO', {
+    hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'
+  })
+}
 
 export default function Analisis() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [lastUpdate, setLastUpdate] = useState(null)
+
+  const fetchData = useCallback(async (silent = false) => {
+    if (!silent) { setLoading(true) }
+    try {
+      const res = await api.get('/analisis')
+      setData(res.data.data)
+      setCache(res.data.data)
+      setLastUpdate(new Date().toISOString())
+    } catch { } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const res = await api.get('/analisis')
-        setData(res.data.data)
-      } catch { } finally { setLoading(false) }
+    const cached = getCache()
+    if (cached) {
+      setData(cached.data)
+      setLastUpdate(cached.timestamp)
+      setLoading(false)
+    } else {
+      fetchData()
     }
-    load()
-  }, [])
+  }, [fetchData])
+
+  const handleRefresh = async () => {
+    setRefreshing(true)
+    await fetchData(true)
+  }
 
   if (loading) {
     return (
@@ -79,17 +125,24 @@ export default function Analisis() {
     <div className="p-4 lg:p-8 space-y-10">
 
       {/* HEADER */}
-      <div className="relative rounded-2xl overflow-hidden h-36 shadow-md">
+      <div className="relative rounded-2xl overflow-hidden shadow-md">
         <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80" alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/50 to-transparent" />
-        <div className="absolute inset-0 flex items-center px-6">
+        <div className="absolute inset-0 flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
             <BarChart3 size={36} className="text-[#E87C1E]" />
             <div>
               <h1 className="text-3xl font-black text-white">Análisis Global</h1>
-              <p className="text-gray-300 text-sm">KPI's del negocio en tiempo real</p>
+              <p className="text-gray-300 text-sm">
+                Snapshot · {lastUpdate ? fmtHora(lastUpdate) : 'cargando...'}
+              </p>
             </div>
           </div>
+          <button onClick={handleRefresh} disabled={refreshing}
+            className="flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition border border-white/20 disabled:opacity-50">
+            <RefreshCw size={16} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Actualizando...' : 'Actualizar'}
+          </button>
         </div>
       </div>
 
