@@ -23,7 +23,7 @@ export default function Camiones() {
   const abrir = (item = null) => {
     if (item) {
       setEditando(item.id_camion)
-      setForm({ marca: item.marca, modelo: item.modelo, capacidad: item.capacidad, estado: String(item.estado), fk_conductor: item.fk_conductor || '' })
+      setForm({ marca: item.marca, modelo: item.modelo, capacidad: item.capacidad, estado: String(item.estado), fk_conductor: item.fk_conductor || '', placa: item.placa || '', foto_url: item.foto_url || '' })
     } else { setEditando(null); setForm(empty) }
     setModal(true)
   }

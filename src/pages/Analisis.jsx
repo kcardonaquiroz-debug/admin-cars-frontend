@@ -125,7 +125,7 @@ export default function Analisis() {
     <div className="p-4 lg:p-8 space-y-10">
 
       {/* HEADER */}
-      <div className="relative rounded-2xl overflow-hidden shadow-md">
+      <div className="relative rounded-2xl overflow-hidden shadow-md h-36">
         <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1400&q=80" alt="" className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/50 to-transparent" />
         <div className="absolute inset-0 flex items-center justify-between px-6">
