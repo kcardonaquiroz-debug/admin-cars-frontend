@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCRUD } from '../hooks/useCRUD'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
+import toast from 'react-hot-toast'
 import { FileText, Plus, Pencil } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
@@ -27,6 +28,7 @@ export default function Facturas() {
   }
 
   const guardar = async () => {
+    if (+form.basico < 0) { toast.error('El básico no puede ser negativo'); return }
     const body = { ...form, fk_conductor: +form.fk_conductor, basico: +form.basico }
     const ok = editando ? await actualizar(editando, body) : await crear(body)
     if (ok) { setModal(false); setForm(empty); setEditando(null) }
@@ -94,7 +96,7 @@ export default function Facturas() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Básico ($)</label>
-              <input type="number" value={form.basico} onChange={set('basico')} placeholder="0" className={inputCls} />
+              <input type="number" min="0" value={form.basico} onChange={set('basico')} placeholder="0" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Fecha</label>

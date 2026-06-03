@@ -4,6 +4,7 @@ import { useCRUD } from '../hooks/useCRUD'
 import { useAuth } from '../context/AuthContext'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
+import toast from 'react-hot-toast'
 import { MapPin, Plus, Pencil, Eye, Search } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
@@ -56,6 +57,10 @@ export default function Viajes() {
   }
 
   const guardar = async () => {
+    if (+form.valor_flete < 0) { toast.error('El valor del flete no puede ser negativo'); return }
+    if (form.fecha_salida && form.fecha_llegada && new Date(form.fecha_llegada) < new Date(form.fecha_salida)) {
+      toast.error('La fecha de llegada debe ser posterior a la fecha de salida'); return
+    }
     const body = { ...form, fk_camion: +form.fk_camion, fk_conductor: +form.fk_conductor, valor_flete: +form.valor_flete }
     const ok = editando ? await actualizar(editando, body) : await crear(body)
     if (ok) { setModal(false); setForm(empty); setEditando(null) }
@@ -184,7 +189,7 @@ export default function Viajes() {
           </div>
           <div>
             <label className={labelCls}>Valor del flete ($)</label>
-            <input type="number" value={form.valor_flete} onChange={set('valor_flete')} placeholder="0" className={inputCls} />
+            <input type="number" min="0" value={form.valor_flete} onChange={set('valor_flete')} placeholder="0" className={inputCls} />
           </div>
         </div>
       </Modal>

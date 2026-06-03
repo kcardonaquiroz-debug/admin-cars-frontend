@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useCRUD } from '../hooks/useCRUD'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
+import toast from 'react-hot-toast'
 import { Wrench, Plus, Pencil } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
@@ -27,6 +28,7 @@ export default function Mantenimientos() {
   }
 
   const guardar = async () => {
+    if (+form.costo_total < 0) { toast.error('El costo total no puede ser negativo'); return }
     const body = { ...form, fk_camion: +form.fk_camion, costo_total: +form.costo_total }
     const ok = editando ? await actualizar(editando, body) : await crear(body)
     if (ok) { setModal(false); setForm(empty); setEditando(null) }
@@ -93,7 +95,7 @@ export default function Mantenimientos() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Costo total ($)</label>
-              <input type="number" value={form.costo_total} onChange={set('costo_total')} placeholder="0" className={inputCls} />
+              <input type="number" min="0" value={form.costo_total} onChange={set('costo_total')} placeholder="0" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Fecha</label>

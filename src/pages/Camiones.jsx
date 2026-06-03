@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCRUD } from '../hooks/useCRUD'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
+import toast from 'react-hot-toast'
 import { Truck, Plus, Pencil, Eye } from 'lucide-react'
 
 
@@ -28,6 +29,7 @@ export default function Camiones() {
   }
 
   const guardar = async () => {
+    if (+form.capacidad <= 0) { toast.error('La capacidad debe ser mayor a 0'); return }
     const body = { ...form, capacidad: +form.capacidad, estado: +form.estado, fk_conductor: form.fk_conductor ? +form.fk_conductor : null }
     const ok = editando ? await actualizar(editando, body) : await crear(body)
     if (ok) { setModal(false); setForm(empty); setEditando(null) }
@@ -98,7 +100,7 @@ export default function Camiones() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Capacidad (ton)</label>
-              <input type="number" value={form.capacidad} onChange={set('capacidad')} placeholder="0.00" className={inputCls} />
+              <input type="number" min="0" value={form.capacidad} onChange={set('capacidad')} placeholder="0.00" className={inputCls} />
             </div>
             <div>
               <label className={labelCls}>Estado</label>
