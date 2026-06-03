@@ -4,7 +4,7 @@ import { useCRUD } from '../hooks/useCRUD'
 import { useAuth } from '../context/AuthContext'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
-import { MapPin, Plus, Pencil, Eye } from 'lucide-react'
+import { MapPin, Plus, Pencil, Eye, Search } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
@@ -27,8 +27,16 @@ export default function Viajes() {
   const [modal, setModal] = useState(false)
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(empty)
+  const [search, setSearch] = useState('')
   const navigate = useNavigate()
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
+
+  const filtered = data.filter((v) => {
+    if (!search) return true
+    const q = search.toLowerCase()
+    return [v.nro_guia, v.origen, v.destino, v.producto_carga, v.placa, v.nombre_conductor, String(v.id_viaje)]
+      .some((val) => val?.toLowerCase().includes(q))
+  })
 
   const abrir = (item = null) => {
     if (item) {
@@ -63,7 +71,7 @@ export default function Viajes() {
             <MapPin className="text-[#E87C1E]" size={28} />
             <div>
               <h1 className="text-2xl font-black text-gray-800">{esConductor ? 'Mis Viajes' : 'Viajes'}</h1>
-              <p className="text-gray-500 text-sm">{data.length} registros</p>
+              <p className="text-gray-500 text-sm">{filtered.length} registros</p>
             </div>
           </div>
           {!esConductor && (
@@ -75,9 +83,20 @@ export default function Viajes() {
         </div>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-300" size={16} />
+        <input
+          type="text"
+          placeholder="Buscar por guía, origen, destino, carga, placa, conductor..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-white border border-gray-200 rounded-xl pl-9 pr-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
+        />
+      </div>
+
       <Table
         columns={['#', 'Guía', 'Ruta', 'Carga', 'Fecha', 'Flete', 'Estado', '']}
-        data={data} loading={loading}
+        data={filtered} loading={loading}
         renderRow={(v) => (<>
           <td className="px-4 py-3 text-xs text-gray-400">#{v.id_viaje}</td>
           <td className="px-4 py-3 text-xs text-gray-500">{v.nro_guia || '—'}</td>
