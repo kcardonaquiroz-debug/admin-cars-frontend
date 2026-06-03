@@ -130,9 +130,9 @@ export default function Analisis() {
         <div className="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/50 to-transparent" />
         <div className="absolute inset-0 flex items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <BarChart3 size={36} className="text-[#E87C1E]" />
+            <BarChart3 size={28} className="text-[#E87C1E]" />
             <div>
-              <h1 className="text-3xl font-black text-white">Análisis Global</h1>
+              <h1 className="text-2xl font-black text-white">Análisis Global</h1>
               <p className="text-gray-300 text-sm">
                 Snapshot · {lastUpdate ? fmtHora(lastUpdate) : 'cargando...'}
               </p>
