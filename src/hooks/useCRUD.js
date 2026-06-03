@@ -52,7 +52,7 @@ export function useCRUD(endpoint) {
       fetchAll()
       return true
     } catch (e) {
-      toast.error(e.response?.data?.error || e.response?.data?.message || 'Error al crear')
+      toast.error(e.response?.data?.error?.message || e.response?.data?.message || 'Error al crear')
       return false
     }
   }
@@ -64,7 +64,7 @@ export function useCRUD(endpoint) {
       fetchAll()
       return true
     } catch (e) {
-      toast.error(e.response?.data?.error || e.response?.data?.message || 'Error al actualizar')
+      toast.error(e.response?.data?.error?.message || e.response?.data?.message || 'Error al actualizar')
       return false
     }
   }
@@ -76,7 +76,7 @@ export function useCRUD(endpoint) {
       toast.success('Eliminado correctamente')
       fetchAll()
     } catch (e) {
-      toast.error(e.response?.data?.error || 'Error al eliminar')
+      toast.error(e.response?.data?.error?.message || e.response?.data?.message || 'Error al eliminar')
     }
   }
 
