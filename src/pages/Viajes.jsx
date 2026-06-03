@@ -61,6 +61,10 @@ export default function Viajes() {
     if (form.fecha_salida && form.fecha_llegada && new Date(form.fecha_llegada) < new Date(form.fecha_salida)) {
       toast.error('La fecha de llegada debe ser posterior a la fecha de salida'); return
     }
+    const conductorSel = conductores.find(c => c.id_conductor === +form.fk_conductor)
+    if (conductorSel?.licencia_vence && form.fecha_salida && new Date(form.fecha_salida) > new Date(conductorSel.licencia_vence)) {
+      toast.error('La licencia del conductor está vencida para la fecha de este viaje'); return
+    }
     const body = { ...form, fk_camion: +form.fk_camion, fk_conductor: +form.fk_conductor, valor_flete: +form.valor_flete }
     const ok = editando ? await actualizar(editando, body) : await crear(body)
     if (ok) { setModal(false); setForm(empty); setEditando(null) }
