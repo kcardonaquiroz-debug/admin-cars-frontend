@@ -16,15 +16,19 @@ import Liquidacion from './pages/Liquidacion'
 import Analisis from './pages/Analisis'
 import LandingPage from './pages/LandingPage'
 
-// Componente auxiliar para manejar redirecciones inteligentes en rutas inexistentes
+function HomeRedirect() {
+  const { usuario } = useAuth()
+  if (usuario?.rol === 'Conductor') return <Navigate to="/app/mi-resumen" replace />
+  return <Dashboard />
+}
+
 function FallbackRedirect() {
   const { usuario } = useAuth()
-  // Si está logueado, cualquier error de ruta lo deja dentro del panel, si no, va a la landing
   return usuario ? <Navigate to="/app" /> : <Navigate to="/" />
 }
 
 function PrivateRoute({ children }) {
-  const { usuario, loading } = useAuth() // Añadido loading para evitar parpadeos y expulsiones
+  const { usuario, loading } = useAuth()
   
   if (loading) {
     return (
@@ -42,10 +46,7 @@ function AdminRoute({ children }) {
   
   if (loading) return null
   if (!usuario) return <Navigate to="/login" />
-  
-  // CORRECCIÓN: Si es Conductor, lo mandamos al dashboard interno de la app, 
-  // ya que "/mis-viajes" de forma independiente no existe y causaba la expulsión.
-  if (usuario.rol === 'Conductor') return <Navigate to="/app" />
+  if (usuario.rol === 'Conductor') return <Navigate to="/app/mi-resumen" replace />
   
   return children
 }
@@ -60,7 +61,7 @@ export default function App() {
 
       {/* ================= RUTAS PRIVADAS (PANEL) ================= */}
       <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
-        <Route index element={<Dashboard />} />
+        <Route index element={<HomeRedirect />} />
         <Route path="viajes" element={<Viajes />} />
         <Route path="viajes/:id" element={<ViajeDetalle />} />
         <Route path="viajes/:id/liquidacion" element={<Liquidacion />} />
