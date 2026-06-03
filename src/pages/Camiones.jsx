@@ -56,10 +56,11 @@ export default function Camiones() {
       </div>
 
       <Table
-        columns={['#', 'Marca', 'Modelo', 'Capacidad', 'Estado', '']}
+        columns={['#', 'Placa', 'Marca', 'Modelo', 'Capacidad', 'Estado', '']}
         data={data} loading={loading}
         renderRow={(c) => (<>
           <td className="px-4 py-3 text-xs text-gray-400">#{c.id_camion}</td>
+          <td className="px-4 py-3 font-bold text-sm text-gray-800">{c.placa || '—'}</td>
           <td className="px-4 py-3 font-semibold text-sm text-gray-800">{c.marca}</td>
           <td className="px-4 py-3 text-sm text-gray-500">{c.modelo}</td>
           <td className="px-4 py-3 text-sm text-gray-500">{c.capacidad} ton</td>
