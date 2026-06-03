@@ -7,7 +7,7 @@ import { ArrowLeft, Truck, MapPin, DollarSign, TrendingUp, Camera } from 'lucide
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
 
-export default function CamionResumen() {
+export default function CamionResumen({ conductorMode }) {
   const { id } = useParams()
   const navigate = useNavigate()
   const fileRef = useRef(null)
@@ -19,16 +19,18 @@ export default function CamionResumen() {
     fin: new Date().toISOString().slice(0, 10)
   })
 
+  const urlBase = conductorMode ? '/camiones/mio' : `/camiones/${id}`
+
   const cargar = async () => {
     try {
       setLoading(true)
-      const res = await api.get(`/camiones/${id}/resumen?fecha_inicio=${fechas.inicio}&fecha_fin=${fechas.fin}`)
+      const res = await api.get(`${urlBase}/resumen?fecha_inicio=${fechas.inicio}&fecha_fin=${fechas.fin}`)
       setData(res.data.data)
     } catch { toast.error('Error al cargar resumen') }
     finally { setLoading(false) }
   }
 
-  useEffect(() => { cargar() }, [id, fechas])
+  useEffect(() => { cargar() }, [id, fechas, conductorMode])
 
   const handleUpload = async (e) => {
     const file = e.target.files?.[0]
@@ -39,7 +41,7 @@ export default function CamionResumen() {
     try {
       const fd = new FormData()
       fd.append('foto', file)
-      const res = await api.post(`/camiones/${id}/upload`, fd, {
+      const res = await api.post(`/camiones/${data.camion.id_camion}/upload`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
       setData(prev => ({
@@ -65,7 +67,7 @@ export default function CamionResumen() {
 
       {/* HEADER */}
       <div className="flex items-center gap-4">
-        <button onClick={() => navigate('/app/camiones')}
+        <button onClick={() => navigate(conductorMode ? '/app' : '/app/camiones')}
           className="p-2 rounded-xl bg-white border border-gray-200 text-gray-400 hover:text-gray-800 transition">
           <ArrowLeft size={18} />
         </button>

@@ -19,7 +19,7 @@ const navAdmin = [
 ]
 
 const navConductor = [
-  { to: '/app', label: 'Mi resumen', icon: LayoutDashboard, end: true },
+  { to: '/app/mi-resumen', label: 'Mi resumen', icon: LayoutDashboard },
   { to: '/app/viajes', label: 'Mis viajes', icon: MapPin },
 ]
 

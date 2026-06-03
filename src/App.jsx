@@ -64,6 +64,7 @@ export default function App() {
         <Route path="viajes" element={<Viajes />} />
         <Route path="viajes/:id" element={<ViajeDetalle />} />
         <Route path="viajes/:id/liquidacion" element={<Liquidacion />} />
+        <Route path="mi-resumen" element={<CamionResumen conductorMode />} />
         
         {/* Rutas exclusivas de Administrador */}
         <Route path="camiones" element={<AdminRoute><Camiones /></AdminRoute>} />
