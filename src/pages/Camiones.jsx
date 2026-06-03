@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCRUD } from '../hooks/useCRUD'
+import { useAuth } from '../context/AuthContext'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
@@ -13,6 +14,8 @@ const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-w
 
 export default function Camiones() {
   const navigate = useNavigate()
+  const { usuario } = useAuth()
+  const esAdmin = usuario?.rol === 'Administrador'
   const { data, loading, crear, actualizar, eliminar } = useCRUD('camiones')
   const { data: conductores } = useCRUD('conductores')
   const [modal, setModal] = useState(false)
@@ -75,10 +78,10 @@ export default function Camiones() {
                 className="text-xs text-[#E87C1E] border border-[#E87C1E]/30 hover:bg-[#E87C1E]/10 px-2 py-1 rounded-lg transition flex items-center gap-1">
                 <Pencil size={11} /> Editar
               </button>
-              <button onClick={() => eliminar(c.id_camion)}
+              {esAdmin && <button onClick={() => eliminar(c.id_camion)}
                 className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">
                 Eliminar
-              </button>
+              </button>}
               <button onClick={() => navigate(`/app/camiones/${c.id_camion}/resumen`)}
                 className="text-xs text-blue-500 border border-blue-200 hover:bg-blue-50 px-2 py-1 rounded-lg transition flex items-center gap-1">
                 <Eye size={11} /> Resumen

@@ -34,6 +34,7 @@ export default function ViajeDetalle() {
   const navigate = useNavigate()
   const { usuario } = useAuth()
   const esConductor = usuario?.rol === 'Conductor'
+  const esAdmin = usuario?.rol === 'Administrador'
 
   const [viaje, setViaje] = useState(null)
   const [gastos, setGastos] = useState([])
@@ -201,8 +202,8 @@ export default function ViajeDetalle() {
                           className="text-xs text-[#E87C1E] border border-[#E87C1E]/30 hover:bg-[#E87C1E]/10 px-2 py-1 rounded-lg transition flex items-center gap-1">
                           <Pencil size={11} /> Editar
                         </button>
-                        <button onClick={() => eliminarGasto(g.id_gastos)}
-                          className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">✕</button>
+                        {esAdmin && <button onClick={() => eliminarGasto(g.id_gastos)}
+                          className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">✕</button>}
                       </div>
                     </td>
                   )}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCRUD } from '../hooks/useCRUD'
+import { useAuth } from '../context/AuthContext'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
@@ -12,6 +13,8 @@ const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
 
 export default function Mantenimientos() {
+  const { usuario } = useAuth()
+  const esAdmin = usuario?.rol === 'Administrador'
   const { data, loading, crear, actualizar, eliminar } = useCRUD('mantenimientos')
   const { data: camiones } = useCRUD('camiones')
   const [modal, setModal] = useState(false)
@@ -69,10 +72,10 @@ export default function Mantenimientos() {
                 className="text-xs text-[#E87C1E] border border-[#E87C1E]/30 hover:bg-[#E87C1E]/10 px-2 py-1 rounded-lg transition flex items-center gap-1">
                 <Pencil size={11} /> Editar
               </button>
-              <button onClick={() => eliminar(m.id_mantenimiento)}
+              {esAdmin && <button onClick={() => eliminar(m.id_mantenimiento)}
                 className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">
                 Eliminar
-              </button>
+              </button>}
             </div>
           </td>
         </>)}

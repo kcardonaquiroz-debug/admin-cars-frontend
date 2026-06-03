@@ -22,6 +22,7 @@ const estadoBadge = {
 export default function Viajes() {
   const { usuario } = useAuth()
   const esConductor = usuario?.rol === 'Conductor'
+  const esAdmin = usuario?.rol === 'Administrador'
   const { data, loading, crear, actualizar, eliminar } = useCRUD('viajes')
   const { data: camiones } = useCRUD('camiones')
   const { data: conductores } = useCRUD('conductores')
@@ -129,10 +130,10 @@ export default function Viajes() {
                   className="text-xs text-[#E87C1E] border border-[#E87C1E]/30 hover:bg-[#E87C1E]/10 px-2 py-1 rounded-lg transition flex items-center gap-1">
                   <Pencil size={11} /> Editar
                 </button>
-                <button onClick={() => eliminar(v.id_viaje)}
+                {esAdmin && <button onClick={() => eliminar(v.id_viaje)}
                   className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">
                   Eliminar
-                </button>
+                </button>}
               </>)}
             </div>
           </td>

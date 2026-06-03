@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useCRUD } from '../hooks/useCRUD'
+import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 import { DollarSign, Plus, ChevronDown, Pencil } from 'lucide-react'
@@ -12,6 +13,8 @@ const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
 
 export default function Gastos() {
+  const { usuario } = useAuth()
+  const esAdmin = usuario?.rol === 'Administrador'
   const { data: gastos, loading, crear, actualizar, eliminar } = useCRUD('gastos')
   const { data: viajes } = useCRUD('viajes')
   const [modal, setModal] = useState(false)
@@ -127,10 +130,10 @@ export default function Gastos() {
                                     className="text-xs text-[#E87C1E] border border-[#E87C1E]/30 hover:bg-[#E87C1E]/10 px-2 py-1 rounded-lg transition flex items-center gap-1">
                                     <Pencil size={11} /> Editar
                                   </button>
-                                  <button onClick={() => eliminar(g.id_gastos)}
+                                  {esAdmin && <button onClick={() => eliminar(g.id_gastos)}
                                     className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-2 py-1 rounded-lg transition">
                                     ✕
-                                  </button>
+                                  </button>}
                                 </div>
                               </td>
                             </tr>
