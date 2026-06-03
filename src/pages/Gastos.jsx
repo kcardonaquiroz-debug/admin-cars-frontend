@@ -35,7 +35,11 @@ export default function Gastos() {
 
   const guardar = async () => {
     if (!form.fk_viaje || !form.tipo_gasto || !form.monto) {
-      toast.error('Completa todos los campos')
+        toast.error('Completa todos los campos')
+      return
+    }
+    if (parseFloat(form.monto) < 0) {
+      toast.error('El monto no puede ser negativo')
       return
     }
     const body = {
@@ -174,7 +178,7 @@ export default function Gastos() {
           </div>
           <div>
             <label className={labelCls}>Monto ($)</label>
-            <input type="number" value={form.monto} onChange={set('monto')} placeholder="0" className={inputCls} />
+            <input type="number" min="0" value={form.monto} onChange={set('monto')} placeholder="0" className={inputCls} />
           </div>
         </div>
       </Modal>
