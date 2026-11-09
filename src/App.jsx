@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import Login from './pages/Login'
-import Register from './pages/Register'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Viajes from './pages/Viajes'
@@ -15,6 +14,7 @@ import Mantenimientos from './pages/Mantenimientos'
 import Liquidacion from './pages/Liquidacion'
 import Analisis from './pages/Analisis'
 import LandingPage from './pages/LandingPage'
+import Usuarios from './pages/Usuarios'
 
 function HomeRedirect() {
   const { usuario } = useAuth()
@@ -51,13 +51,24 @@ function AdminRoute({ children }) {
   return children
 }
 
+function SuperAdminRoute({ children }) {
+  const { usuario, loading } = useAuth()
+
+  if (loading) return null
+  if (!usuario) return <Navigate to="/login" />
+  if (usuario.rol !== 'SuperAdmin') return <Navigate to="/app" replace />
+
+  return children
+}
+
 export default function App() {
   return (
     <Routes>
       {/* ================= RUTAS PÚBLICAS ================= */}
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* El registro público se eliminó: los usuarios los crea el SuperAdmin */}
+      <Route path="/register" element={<Navigate to="/login" replace />} />
 
       {/* ================= RUTAS PRIVADAS (PANEL) ================= */}
       <Route path="/app" element={<PrivateRoute><Layout /></PrivateRoute>}>
@@ -75,6 +86,9 @@ export default function App() {
         <Route path="facturas" element={<AdminRoute><Facturas /></AdminRoute>} />
         <Route path="mantenimientos" element={<AdminRoute><Mantenimientos /></AdminRoute>} />
         <Route path="analisis" element={<AdminRoute><Analisis /></AdminRoute>} />
+
+        {/* Ruta exclusiva del Super Administrador */}
+        <Route path="usuarios" element={<SuperAdminRoute><Usuarios /></SuperAdminRoute>} />
       </Route>
 
       {/* Comodín: Redirección inteligente controlada */}

@@ -10,6 +10,12 @@ const getCache = (key) => {
   } catch { return null }
 }
 
+// El backend responde errores como { error: 'texto' } o { message: 'texto' }
+const errMsg = (e, fallback) => {
+  const d = e.response?.data
+  return d?.error?.message || d?.message || (typeof d?.error === 'string' ? d.error : null) || fallback
+}
+
 const setCache = (key, data) => {
   try {
     sessionStorage.setItem(key, JSON.stringify({ data, timestamp: new Date().toISOString() }))
@@ -52,7 +58,7 @@ export function useCRUD(endpoint) {
       fetchAll()
       return true
     } catch (e) {
-      toast.error(e.response?.data?.error?.message || e.response?.data?.message || 'Error al crear')
+      toast.error(errMsg(e, 'Error al crear'))
       return false
     }
   }
@@ -64,7 +70,7 @@ export function useCRUD(endpoint) {
       fetchAll()
       return true
     } catch (e) {
-      toast.error(e.response?.data?.error?.message || e.response?.data?.message || 'Error al actualizar')
+      toast.error(errMsg(e, 'Error al actualizar'))
       return false
     }
   }
@@ -76,7 +82,7 @@ export function useCRUD(endpoint) {
       toast.success('Eliminado correctamente')
       fetchAll()
     } catch (e) {
-      toast.error(e.response?.data?.error?.message || e.response?.data?.message || 'Error al eliminar')
+      toast.error(errMsg(e, 'Error al eliminar'))
     }
   }
 

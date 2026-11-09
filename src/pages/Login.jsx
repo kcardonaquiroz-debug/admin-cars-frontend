@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
@@ -108,10 +108,7 @@ export default function Login() {
           </form>
 
           <p className="text-center text-sm text-gray-400 mt-6">
-            ¿No tienes cuenta?{' '}
-            <Link to="/register" className="text-[#E87C1E] hover:text-[#C4610E] font-semibold transition">
-              Regístrate
-            </Link>
+            ¿No tienes cuenta? Solicítala al administrador del sistema.
           </p>
         </div>
       </div>

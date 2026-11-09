@@ -2,21 +2,23 @@ import { useState } from 'react'
 import { useCRUD } from '../hooks/useCRUD'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
+import CatalogoGastos from '../components/CatalogoGastos'
 import toast from 'react-hot-toast'
-import { DollarSign, Plus, ChevronDown, Pencil } from 'lucide-react'
+import { DollarSign, Plus, ChevronDown, Pencil, List, BookOpen } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
 const empty = { fk_viaje: '', tipo_gasto: '', monto: '' }
-const tipos = ['Combustible', 'Peaje', 'Alimentación', 'Reparación menor', 'Hospedaje', 'Otro']
 const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
 
 export default function Gastos() {
   const { usuario } = useAuth()
-  const esAdmin = usuario?.rol === 'Administrador'
+  const esAdmin = ['Administrador', 'SuperAdmin'].includes(usuario?.rol)
   const { data: gastos, loading, crear, actualizar, eliminar } = useCRUD('gastos')
   const { data: viajes } = useCRUD('viajes')
+  const { data: tipos, fetchAll: recargarTipos } = useCRUD('tipos-gasto')
+  const [vista, setVista] = useState('viajes')
   const [modal, setModal] = useState(false)
   const [editando, setEditando] = useState(null)
   const [abiertos, setAbiertos] = useState({})
@@ -66,17 +68,35 @@ export default function Gastos() {
             <DollarSign className="text-[#E87C1E]" size={28} />
             <div>
               <h1 className="text-2xl font-black text-gray-800">Gastos</h1>
-              <p className="text-gray-500 text-sm">Agrupados por viaje</p>
+              <p className="text-gray-500 text-sm">{vista === 'viajes' ? 'Agrupados por viaje' : 'Catálogo de tipos de gasto'}</p>
             </div>
           </div>
-          <button onClick={() => abrir()}
-            className="flex items-center gap-2 bg-[#E87C1E] hover:bg-[#C4610E] text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-[#E87C1E]/30">
-            <Plus size={16} /> Nuevo gasto
-          </button>
+          {vista === 'viajes' && (
+            <button onClick={() => abrir()}
+              className="flex items-center gap-2 bg-[#E87C1E] hover:bg-[#C4610E] text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition shadow-lg shadow-[#E87C1E]/30">
+              <Plus size={16} /> Nuevo gasto
+            </button>
+          )}
         </div>
       </div>
 
-      {loading ? (
+      <div className="flex gap-2">
+        {[
+          { id: 'viajes', label: 'Gastos por viaje', icon: List },
+          { id: 'catalogo', label: 'Catálogo de gastos', icon: BookOpen },
+        ].map(({ id, label, icon: Icon }) => (
+          <button key={id} onClick={() => setVista(id)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition ${vista === id
+              ? 'bg-[#E87C1E] text-white shadow-md shadow-[#E87C1E]/30'
+              : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-800 hover:bg-gray-50'}`}>
+            <Icon size={15} /> {label}
+          </button>
+        ))}
+      </div>
+
+      {vista === 'catalogo' ? (
+        <CatalogoGastos esAdmin={esAdmin} onChange={recargarTipos} />
+      ) : loading ? (
         <div className="text-center py-12 text-gray-400">Cargando...</div>
       ) : viajes.length === 0 ? (
         <div className="text-center py-12 text-gray-400 text-sm">Sin viajes registrados</div>
@@ -176,8 +196,14 @@ export default function Gastos() {
             <label className={labelCls}>Tipo de gasto</label>
             <select value={form.tipo_gasto} onChange={set('tipo_gasto')} className={inputCls}>
               <option value="">Seleccionar...</option>
-              {tipos.map(t => <option key={t} value={t}>{t}</option>)}
+              {tipos.map(t => <option key={t.id_tipo_gasto} value={t.nombre}>{t.nombre}</option>)}
+              {form.tipo_gasto && !tipos.some(t => t.nombre === form.tipo_gasto) && (
+                <option value={form.tipo_gasto}>{form.tipo_gasto}</option>
+              )}
             </select>
+            {tipos.length === 0 && (
+              <p className="text-xs text-gray-400 mt-1.5">No hay tipos de gasto activos. Créalos en la pestaña "Catálogo de gastos".</p>
+            )}
           </div>
           <div>
             <label className={labelCls}>Monto ($)</label>

@@ -239,12 +239,8 @@ export default function LandingPage() {
             </p>
 
             <div className="anim-fade-up-3 flex flex-wrap gap-4">
-              <Link to="/register"
-                className="font-dm font-semibold bg-[#E87C1E] hover:bg-[#C4610E] text-white px-8 py-3.5 rounded-xl text-base transition-all duration-200 shadow-xl shadow-[#E87C1E]/30 hover:shadow-[#E87C1E]/50 hover:-translate-y-0.5">
-                Empezar gratis
-              </Link>
               <Link to="/login"
-                className="font-dm font-medium border border-white/15 hover:border-white/30 text-white px-8 py-3.5 rounded-xl text-base transition-all duration-200 hover:-translate-y-0.5">
+                className="font-dm font-semibold bg-[#E87C1E] hover:bg-[#C4610E] text-white px-8 py-3.5 rounded-xl text-base transition-all duration-200 shadow-xl shadow-[#E87C1E]/30 hover:shadow-[#E87C1E]/50 hover:-translate-y-0.5">
                 Iniciar sesión →
               </Link>
             </div>
@@ -441,16 +437,12 @@ export default function LandingPage() {
             <span className="text-[#E87C1E]">control de tu flota?</span>
           </h2>
           <p className="font-dm text-gray-400 mt-6 text-lg max-w-xl mx-auto" style={{ fontWeight: 300 }}>
-            Únete a las empresas de transporte que ya gestionan sus operaciones con AdminCARS. Configura tu cuenta en minutos.
+            Únete a las empresas de transporte que ya gestionan sus operaciones con AdminCARS. Solicita tu acceso al administrador.
           </p>
           <div className="flex flex-wrap gap-4 justify-center mt-10">
-            <Link to="/register"
-              className="font-dm font-semibold bg-[#E87C1E] hover:bg-[#C4610E] text-white px-10 py-4 rounded-xl text-base transition-all duration-200 shadow-2xl shadow-[#E87C1E]/40 hover:-translate-y-1">
-              Crear cuenta gratis
-            </Link>
             <Link to="/login"
-              className="font-dm font-medium border border-white/15 hover:border-white/30 text-white px-10 py-4 rounded-xl text-base transition-all duration-200 hover:-translate-y-1">
-              Ya tengo cuenta
+              className="font-dm font-semibold bg-[#E87C1E] hover:bg-[#C4610E] text-white px-10 py-4 rounded-xl text-base transition-all duration-200 shadow-2xl shadow-[#E87C1E]/40 hover:-translate-y-1">
+              Iniciar sesión
             </Link>
           </div>
         </div>
@@ -467,7 +459,6 @@ export default function LandingPage() {
           </p>
           <div className="flex gap-6">
             <Link to="/login" className="font-dm text-sm text-gray-500 hover:text-white transition-colors">Iniciar sesión</Link>
-            <Link to="/register" className="font-dm text-sm text-gray-500 hover:text-white transition-colors">Registrarse</Link>
           </div>
         </div>
       </footer>

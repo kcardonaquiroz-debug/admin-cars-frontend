@@ -9,9 +9,11 @@ import { MapPin, Plus, Pencil, Eye, Search } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
-const empty = { fk_camion: '', fk_conductor: '', nro_guia: '', origen: '', destino: '', producto_carga: '', fecha_salida: '', fecha_llegada: '', valor_flete: '', estado: 'en_curso' }
+const empty = { fk_camion: '', fk_conductor: '', nro_guia: '', origen: '', destino: '', producto_carga: '', toneladas: '', fecha_salida: '', fecha_llegada: '', valor_flete: '', estado: 'en_curso' }
 const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+
+const fmtTon = (t) => (t === null || t === undefined || t === '') ? null : `${Number(t).toLocaleString('es-CO')} t`
 
 const estadoBadge = {
   en_curso: 'bg-blue-100 text-blue-600',
@@ -22,7 +24,7 @@ const estadoBadge = {
 export default function Viajes() {
   const { usuario } = useAuth()
   const esConductor = usuario?.rol === 'Conductor'
-  const esAdmin = usuario?.rol === 'Administrador'
+  const esAdmin = ['Administrador', 'SuperAdmin'].includes(usuario?.rol)
   const { data, loading, crear, actualizar, eliminar } = useCRUD('viajes')
   const { data: camiones } = useCRUD('camiones')
   const { data: conductores } = useCRUD('conductores')
@@ -48,6 +50,7 @@ export default function Viajes() {
         nro_guia: item.nro_guia || '',
         origen: item.origen, destino: item.destino,
         producto_carga: item.producto_carga,
+        toneladas: item.toneladas ?? '',
         fecha_salida: item.fecha_salida?.slice(0, 10) || '',
         fecha_llegada: item.fecha_llegada?.slice(0, 10) || '',
         valor_flete: item.valor_flete,
@@ -58,6 +61,8 @@ export default function Viajes() {
   }
 
   const guardar = async () => {
+    if (!editando && form.toneladas === '') { toast.error('Debes ingresar las toneladas del viaje'); return }
+    if (form.toneladas !== '' && !(+form.toneladas > 0)) { toast.error('Las toneladas deben ser mayores a 0'); return }
     if (+form.valor_flete < 0) { toast.error('El valor del flete no puede ser negativo'); return }
     if (form.fecha_salida && form.fecha_llegada && new Date(form.fecha_llegada) < new Date(form.fecha_salida)) {
       toast.error('La fecha de llegada debe ser posterior a la fecha de salida'); return
@@ -66,7 +71,7 @@ export default function Viajes() {
     if (conductorSel?.licencia_vence && form.fecha_salida && new Date(form.fecha_salida) > new Date(conductorSel.licencia_vence)) {
       toast.error('La licencia del conductor está vencida para la fecha de este viaje'); return
     }
-    const body = { ...form, fk_camion: +form.fk_camion, fk_conductor: +form.fk_conductor, valor_flete: +form.valor_flete }
+    const body = { ...form, fk_camion: +form.fk_camion, fk_conductor: +form.fk_conductor, valor_flete: +form.valor_flete, toneladas: form.toneladas === '' ? null : +form.toneladas }
     const ok = editando ? await actualizar(editando, body) : await crear(body)
     if (ok) { setModal(false); setForm(empty); setEditando(null) }
   }
@@ -111,7 +116,10 @@ export default function Viajes() {
           <td className="px-4 py-3 text-xs text-gray-400">#{v.id_viaje}</td>
           <td className="px-4 py-3 text-xs text-gray-500">{v.nro_guia || '—'}</td>
           <td className="px-4 py-3 font-semibold text-sm text-gray-800">{v.origen} → {v.destino}</td>
-          <td className="px-4 py-3 text-sm text-gray-500">{v.producto_carga}</td>
+          <td className="px-4 py-3 text-sm text-gray-500">
+            {v.producto_carga}
+            {fmtTon(v.toneladas) && <span className="block text-xs text-gray-400">{fmtTon(v.toneladas)}</span>}
+          </td>
           <td className="px-4 py-3 text-sm text-gray-500">{fmtDate(v.fecha_salida)}</td>
           <td className="px-4 py-3 font-bold text-[#E87C1E] text-sm">{cop(v.valor_flete)}</td>
           <td className="px-4 py-3">
@@ -182,6 +190,10 @@ export default function Viajes() {
               <input value={form[key]} onChange={set(key)} placeholder={placeholder} className={inputCls} />
             </div>
           ))}
+          <div>
+            <label className={labelCls}>Toneladas {!editando && <span className="text-red-400">*</span>}</label>
+            <input type="number" min="0" step="0.01" value={form.toneladas} onChange={set('toneladas')} placeholder="Ej: 34.5" className={inputCls} />
+          </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelCls}>Fecha salida</label>

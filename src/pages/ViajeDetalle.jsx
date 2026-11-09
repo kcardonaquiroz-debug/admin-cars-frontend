@@ -2,28 +2,13 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
+import { useCRUD } from '../hooks/useCRUD'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Plus, Pencil, FileText, Truck, User, Package, Calendar } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
-
-const categorias = [
-  'Combustible (ACPM)',
-  'Peaje',
-  'Viáticos / Liga',
-  'Comisión',
-  'Porcentaje',
-  'Engrasado',
-  'Aceite de motor',
-  'Repuestos',
-  'Seguridad',
-  'Seguimiento',
-  'Planilla',
-  'Plástico',
-  'Otro',
-]
 
 const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
@@ -34,8 +19,9 @@ export default function ViajeDetalle() {
   const navigate = useNavigate()
   const { usuario } = useAuth()
   const esConductor = usuario?.rol === 'Conductor'
-  const esAdmin = usuario?.rol === 'Administrador'
+  const esAdmin = ['Administrador', 'SuperAdmin'].includes(usuario?.rol)
 
+  const { data: tiposGasto } = useCRUD('tipos-gasto')
   const [viaje, setViaje] = useState(null)
   const [gastos, setGastos] = useState([])
   const [loading, setLoading] = useState(true)
@@ -123,7 +109,7 @@ export default function ViajeDetalle() {
         {[
           { icon: Truck, label: 'Camión', value: `${viaje.placa || ''} ${viaje.marca} ${viaje.modelo}` },
           { icon: User, label: 'Conductor', value: viaje.nombre_conductor || '—' },
-          { icon: Package, label: 'Carga', value: viaje.producto_carga || '—' },
+          { icon: Package, label: 'Carga', value: `${viaje.producto_carga || '—'}${viaje.toneladas != null ? ` · ${Number(viaje.toneladas).toLocaleString('es-CO')} t` : ''}` },
           { icon: Calendar, label: 'Fecha salida', value: fmtDate(viaje.fecha_salida) },
         ].map(({ icon: Icon, label, value }) => (
           <div key={label} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
@@ -228,7 +214,10 @@ export default function ViajeDetalle() {
             <label className={labelCls}>Tipo de gasto</label>
             <select value={form.tipo_gasto} onChange={set('tipo_gasto')} className={inputCls}>
               <option value="">Seleccionar...</option>
-              {categorias.map(c => <option key={c} value={c}>{c}</option>)}
+              {tiposGasto.map(t => <option key={t.id_tipo_gasto} value={t.nombre}>{t.nombre}</option>)}
+              {form.tipo_gasto && !tiposGasto.some(t => t.nombre === form.tipo_gasto) && (
+                <option value={form.tipo_gasto}>{form.tipo_gasto}</option>
+              )}
             </select>
           </div>
           <div>

@@ -108,7 +108,7 @@ export default function Liquidacion() {
       ['CAMIÓN', `${viaje.placa || ''} ${viaje.marca} ${viaje.modelo}`.trim()],
       ['CONDUCTOR', viaje.nombre_conductor || '—'],
       ['RUTA', `${viaje.origen} → ${viaje.destino}`],
-      ['CARGA', viaje.producto_carga || '—'],
+      ['CARGA', `${viaje.producto_carga || '—'}${viaje.toneladas != null ? ` (${Number(viaje.toneladas).toLocaleString('es-CO')} t)` : ''}`],
       ['FECHA SALIDA', fmtDate(viaje.fecha_salida)],
       ['FECHA LLEGADA', fmtDate(viaje.fecha_llegada)],
     ]
@@ -273,7 +273,7 @@ export default function Liquidacion() {
             ['Camión', `${viaje.placa || ''} ${viaje.marca} ${viaje.modelo}`.trim()],
             ['Conductor', viaje.nombre_conductor || '—'],
             ['Ruta', `${viaje.origen} → ${viaje.destino}`],
-            ['Carga', viaje.producto_carga || '—'],
+            ['Carga', `${viaje.producto_carga || '—'}${viaje.toneladas != null ? ` (${Number(viaje.toneladas).toLocaleString('es-CO')} t)` : ''}`],
             ['Fecha salida', fmtDate(viaje.fecha_salida)],
             ['Fecha llegada', fmtDate(viaje.fecha_llegada)],
           ].map(([label, valor]) => (

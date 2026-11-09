@@ -14,7 +14,7 @@ const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-w
 
 export default function Facturas() {
   const { usuario } = useAuth()
-  const esAdmin = usuario?.rol === 'Administrador'
+  const esAdmin = ['Administrador', 'SuperAdmin'].includes(usuario?.rol)
   const { data, loading, crear, actualizar, eliminar } = useCRUD('facturas')
   const { data: conductores } = useCRUD('conductores')
   const [modal, setModal] = useState(false)

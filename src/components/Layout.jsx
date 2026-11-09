@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import {
   LayoutDashboard, Truck, Users, MapPin,
   DollarSign, FileText, Wrench, BarChart3,
-  LogOut, Menu, X
+  LogOut, Menu, X, UserCog
 } from 'lucide-react'
 
 const navAdmin = [
@@ -31,7 +31,12 @@ export default function Layout() {
   const handleLogout = () => { logout(); navigate('/login') }
   const initials = usuario?.email?.substring(0, 2).toUpperCase() || 'AC'
   const esConductor = usuario?.rol === 'Conductor'
-  const nav = esConductor ? navConductor : navAdmin
+  const esSuperAdmin = usuario?.rol === 'SuperAdmin'
+  const nav = esConductor
+    ? navConductor
+    : esSuperAdmin
+      ? [...navAdmin, { to: '/app/usuarios', label: 'Usuarios', icon: UserCog }]
+      : navAdmin
 
   return (
     <div className="flex h-screen bg-gray-50 text-gray-800 overflow-hidden">
@@ -62,7 +67,7 @@ export default function Layout() {
           </div>
           <div className="overflow-hidden">
             <p className="text-sm font-semibold truncate text-gray-800">{usuario?.email}</p>
-            <p className="text-xs text-gray-400">{usuario?.rol || 'Usuario'}</p>
+            <p className="text-xs text-gray-400">{esSuperAdmin ? 'Super Admin' : (usuario?.rol || 'Usuario')}</p>
           </div>
         </div>
 

@@ -12,7 +12,7 @@ const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-w
 
 export default function Conductores() {
   const { usuario } = useAuth()
-  const esAdmin = usuario?.rol === 'Administrador'
+  const esAdmin = ['Administrador', 'SuperAdmin'].includes(usuario?.rol)
   const { data, loading, crear, actualizar, eliminar } = useCRUD('conductores')
   const [modal, setModal] = useState(false)
   const [editando, setEditando] = useState(null)
