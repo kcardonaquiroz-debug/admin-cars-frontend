@@ -53,11 +53,11 @@ export function useCRUD(endpoint) {
 
   const crear = async (body) => {
     try {
-      await api.post(`/${endpoint}`, body)
+      const res = await api.post(`/${endpoint}`, body)
       toast.success('Registro creado ✓')
       fetchAll()
       window.dispatchEvent(new Event('alertas:refrescar'))
-      return true
+      return res.data?.data || true
     } catch (e) {
       toast.error(errMsg(e, 'Error al crear'))
       return false
@@ -66,11 +66,11 @@ export function useCRUD(endpoint) {
 
   const actualizar = async (id, body) => {
     try {
-      await api.put(`/${endpoint}/${id}`, body)
+      const res = await api.put(`/${endpoint}/${id}`, body)
       toast.success('Registro actualizado ✓')
       fetchAll()
       window.dispatchEvent(new Event('alertas:refrescar'))
-      return true
+      return res.data?.data || true
     } catch (e) {
       toast.error(errMsg(e, 'Error al actualizar'))
       return false

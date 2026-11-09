@@ -1,11 +1,13 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import api from '../api/axios'
+import { comprimirImagen } from '../utils/imagen'
 import { useNavigate } from 'react-router-dom'
 import { useCRUD } from '../hooks/useCRUD'
 import { useAuth } from '../context/AuthContext'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
-import { Truck, Plus, Pencil, Eye, FileText, ShieldCheck, ClipboardCheck } from 'lucide-react'
+import { Truck, Plus, Pencil, Eye, FileText, ShieldCheck, ClipboardCheck, ImagePlus, Trash2 } from 'lucide-react'
 import { estadoVencimiento, fmtDia } from '../utils/vencimientos'
 
 
@@ -28,14 +30,44 @@ export default function Camiones() {
   const navigate = useNavigate()
   const { usuario } = useAuth()
   const esAdmin = ['Administrador', 'SuperAdmin'].includes(usuario?.rol)
-  const { data, loading, crear, actualizar, eliminar } = useCRUD('camiones')
+  const { data, loading, crear, actualizar, eliminar, fetchAll } = useCRUD('camiones')
   const { data: conductores } = useCRUD('conductores')
   const [modal, setModal] = useState(false)
   const [editando, setEditando] = useState(null)
   const [form, setForm] = useState(empty)
+  const [foto, setFoto] = useState(null) // { archivo, preview } elegido desde el PC
+  const [guardando, setGuardando] = useState(false)
+  const fileRef = useRef(null)
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value })
 
+  const limpiarFoto = () => {
+    if (foto?.preview) URL.revokeObjectURL(foto.preview)
+    setFoto(null)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  const elegirFoto = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!file.type.startsWith('image/')) { toast.error('Selecciona una imagen (jpg, png, webp)'); return }
+    if (file.size > 15 * 1024 * 1024) { toast.error('La imagen es demasiado grande (máx. 15MB)'); return }
+    try {
+      const archivo = await comprimirImagen(file)
+      if (archivo.size > 5 * 1024 * 1024) { toast.error('La imagen supera 5MB'); return }
+      if (foto?.preview) URL.revokeObjectURL(foto.preview)
+      setFoto({ archivo, preview: URL.createObjectURL(archivo) })
+    } catch (err) {
+      toast.error(err.message || 'No se pudo leer la imagen')
+    }
+  }
+
+  const quitarFoto = () => {
+    limpiarFoto()
+    setForm(f => ({ ...f, foto_url: '' }))
+  }
+
   const abrir = (item = null) => {
+    limpiarFoto()
     if (item) {
       setEditando(item.id_camion)
       setForm({ marca: item.marca, modelo: item.modelo, capacidad: item.capacidad, estado: String(item.estado), fk_conductor: item.fk_conductor || '', placa: item.placa || '', foto_url: item.foto_url || '', ...Object.fromEntries(docCampos.map(k => [k, item[k] ? String(item[k]).slice(0, 10) : ''])) })
@@ -46,9 +78,30 @@ export default function Camiones() {
   const guardar = async () => {
     if (+form.capacidad <= 0) { toast.error('La capacidad debe ser mayor a 0'); return }
     const body = { ...form, ...Object.fromEntries(docCampos.map(k => [k, form[k] || null])), capacidad: +form.capacidad, estado: +form.estado, fk_conductor: form.fk_conductor ? +form.fk_conductor : null }
-    const ok = editando ? await actualizar(editando, body) : await crear(body)
-    if (ok) { setModal(false); setForm(empty); setEditando(null) }
+    setGuardando(true)
+    try {
+      const ok = editando ? await actualizar(editando, body) : await crear(body)
+      if (!ok) return
+      const id = editando || ok.insertId
+      if (foto?.archivo && id) {
+        try {
+          const fd = new FormData()
+          fd.append('foto', foto.archivo)
+          await api.post(`/camiones/${id}/upload`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+          toast.success('Foto subida ✓')
+          fetchAll()
+        } catch (e) {
+          toast.error(e.response?.data?.message || 'El camión se guardó, pero no se pudo subir la foto')
+        }
+      }
+      limpiarFoto()
+      setModal(false); setForm(empty); setEditando(null)
+    } finally {
+      setGuardando(false)
+    }
   }
+
+  const fotoMostrada = foto?.preview || form.foto_url
 
   return (
     <div className="p-4 lg:p-8 space-y-6">
@@ -110,7 +163,7 @@ export default function Camiones() {
         </>)}
       />
 
-      <Modal open={modal} onClose={() => setModal(false)} title={editando ? 'Editar Camión' : 'Nuevo Camión'} onSubmit={guardar} submitLabel={editando ? 'Actualizar' : 'Guardar'}>
+      <Modal open={modal} onClose={() => setModal(false)} title={editando ? 'Editar Camión' : 'Nuevo Camión'} onSubmit={guardando ? () => {} : guardar} submitLabel={guardando ? 'Guardando...' : editando ? 'Actualizar' : 'Guardar'}>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             {[{ label: 'Marca', key: 'marca', placeholder: 'Ej: Volvo' }, { label: 'Modelo', key: 'modelo', placeholder: 'Ej: FH16' }].map(({ label, key, placeholder }) => (
@@ -138,8 +191,31 @@ export default function Camiones() {
             <input value={form.placa || ''} onChange={set('placa')} placeholder="Ej: ABC-123" className={inputCls} />
           </div>
           <div>
-            <label className={labelCls}>URL foto del camión</label>
-            <input value={form.foto_url || ''} onChange={set('foto_url')} placeholder="https://..." className={inputCls} />
+            <label className={labelCls}>Foto del camión</label>
+            <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" onChange={elegirFoto} className="hidden" />
+            {fotoMostrada ? (
+              <div className="flex items-center gap-3">
+                <img src={fotoMostrada} alt="Foto del camión" className="w-28 h-20 object-cover rounded-xl border border-gray-200" />
+                <div className="flex flex-col gap-2">
+                  <button type="button" onClick={() => fileRef.current?.click()}
+                    className="text-xs text-[#E87C1E] border border-[#E87C1E]/30 hover:bg-[#E87C1E]/10 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                    <ImagePlus size={13} /> Cambiar foto
+                  </button>
+                  <button type="button" onClick={quitarFoto}
+                    className="text-xs text-red-400 border border-red-200 hover:bg-red-50 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                    <Trash2 size={13} /> Quitar foto
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" onClick={() => fileRef.current?.click()}
+                className="w-full border-2 border-dashed border-gray-200 hover:border-[#E87C1E] hover:bg-orange-50/40 rounded-xl py-5 flex flex-col items-center gap-1.5 text-gray-400 hover:text-[#E87C1E] transition">
+                <ImagePlus size={22} />
+                <span className="text-sm font-medium">Subir foto desde el computador</span>
+                <span className="text-xs">JPG, PNG o WEBP</span>
+              </button>
+            )}
+            {foto && <p className="text-xs text-gray-400 mt-1.5">La foto se sube al guardar.</p>}
           </div>
           <div>
             <label className={labelCls}>Conductor asignado</label>

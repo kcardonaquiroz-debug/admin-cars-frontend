@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../api/axios'
+import { comprimirImagen } from '../utils/imagen'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Truck, MapPin, DollarSign, TrendingUp, Camera, FileText, ShieldCheck, ClipboardCheck } from 'lucide-react'
 import { estadoVencimiento, fmtDia } from '../utils/vencimientos'
@@ -37,11 +38,12 @@ export default function CamionResumen({ conductorMode }) {
     const file = e.target.files?.[0]
     if (!file) return
     if (!file.type.startsWith('image/')) { toast.error('Selecciona una imagen válida'); return }
-    if (file.size > 5 * 1024 * 1024) { toast.error('La imagen supera 5MB'); return }
     setSubiendo(true)
     try {
+      const archivo = await comprimirImagen(file)
+      if (archivo.size > 5 * 1024 * 1024) { toast.error('La imagen supera 5MB'); return }
       const fd = new FormData()
-      fd.append('foto', file)
+      fd.append('foto', archivo)
       const res = await api.post(`/camiones/${data.camion.id_camion}/upload`, fd, {
         headers: { 'Content-Type': 'multipart/form-data' }
       })
@@ -51,7 +53,7 @@ export default function CamionResumen({ conductorMode }) {
       }))
       toast.success('Foto actualizada ✓')
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al subir imagen')
+      toast.error(err.response?.data?.message || err.message || 'Error al subir imagen')
     } finally {
       setSubiendo(false)
       e.target.value = ''
