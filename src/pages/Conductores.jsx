@@ -4,9 +4,9 @@ import { useAuth } from '../context/AuthContext'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
 import { Users, Plus, Pencil } from 'lucide-react'
+import { estadoVencimiento, fmtDia } from '../utils/vencimientos'
 
 const empty = { nombre: '', telefono: '', licencia_nro: '', licencia_vence: '', fk_usuario: '' }
-const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
 const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
 
@@ -57,16 +57,21 @@ export default function Conductores() {
         columns={['#', 'Nombre', 'Teléfono', 'Licencia', 'Vence', 'Estado', '']}
         data={data} loading={loading}
         renderRow={(c) => {
-          const vigente = new Date(c.licencia_vence) > new Date()
+          const lic = estadoVencimiento(c.licencia_vence)
           return (<>
             <td className="px-4 py-3 text-xs text-gray-400">#{c.id_conductor}</td>
             <td className="px-4 py-3 font-semibold text-sm text-gray-800">{c.nombre}</td>
             <td className="px-4 py-3 text-sm text-gray-500">{c.telefono || '—'}</td>
             <td className="px-4 py-3 text-sm text-gray-500">{c.licencia_nro}</td>
             <td className="px-4 py-3">
-              <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${vigente ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'}`}>
-                {fmtDate(c.licencia_vence)}
+              <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${lic.cls}`}>
+                {fmtDia(c.licencia_vence)}
               </span>
+              {(lic.nivel === 'proximo' || lic.nivel === 'vencido') && (
+                <span className={`block mt-1 text-[11px] font-semibold ${lic.nivel === 'vencido' ? 'text-red-500' : 'text-amber-600'}`}>
+                  {lic.texto}
+                </span>
+              )}
             </td>
             <td className="px-4 py-3">
               <span className="bg-green-100 text-green-600 text-xs px-2.5 py-1 rounded-full font-semibold">Activo</span>

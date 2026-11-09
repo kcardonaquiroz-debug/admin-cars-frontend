@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import AlertasCampana from './AlertasCampana'
 import {
   LayoutDashboard, Truck, Users, MapPin,
   DollarSign, FileText, Wrench, BarChart3,
@@ -113,8 +114,11 @@ export default function Layout() {
           <div className="text-sm text-gray-400 hidden lg:block capitalize">
             {new Date().toLocaleDateString('es-CO', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
           </div>
-          <div className="w-9 h-9 rounded-full bg-[#E87C1E]/10 border-2 border-[#E87C1E]/30 flex items-center justify-center text-[#E87C1E] text-sm font-bold lg:hidden">
-            {initials}
+          <div className="flex items-center gap-2">
+            <AlertasCampana esConductor={esConductor} />
+            <div className="w-9 h-9 rounded-full bg-[#E87C1E]/10 border-2 border-[#E87C1E]/30 flex items-center justify-center text-[#E87C1E] text-sm font-bold lg:hidden">
+              {initials}
+            </div>
           </div>
         </header>
         <main className="flex-1 overflow-y-auto bg-gray-50">

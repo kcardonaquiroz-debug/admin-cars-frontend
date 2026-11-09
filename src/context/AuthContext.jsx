@@ -19,6 +19,7 @@ export function AuthProvider({ children }) {
   const login = (data) => {
     localStorage.setItem('token', data.token)
     localStorage.setItem('usuario', JSON.stringify(data.usuario))
+    sessionStorage.removeItem('alertas_avisadas') // mostrar el aviso de vencimientos al entrar
     setUsuario(data.usuario)
   }
 

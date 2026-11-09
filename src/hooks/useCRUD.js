@@ -56,6 +56,7 @@ export function useCRUD(endpoint) {
       await api.post(`/${endpoint}`, body)
       toast.success('Registro creado ✓')
       fetchAll()
+      window.dispatchEvent(new Event('alertas:refrescar'))
       return true
     } catch (e) {
       toast.error(errMsg(e, 'Error al crear'))
@@ -68,6 +69,7 @@ export function useCRUD(endpoint) {
       await api.put(`/${endpoint}/${id}`, body)
       toast.success('Registro actualizado ✓')
       fetchAll()
+      window.dispatchEvent(new Event('alertas:refrescar'))
       return true
     } catch (e) {
       toast.error(errMsg(e, 'Error al actualizar'))
@@ -81,6 +83,7 @@ export function useCRUD(endpoint) {
       await api.delete(`/${endpoint}/${id}`)
       toast.success('Eliminado correctamente')
       fetchAll()
+      window.dispatchEvent(new Event('alertas:refrescar'))
     } catch (e) {
       toast.error(errMsg(e, 'Error al eliminar'))
     }

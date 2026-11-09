@@ -2,7 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import api from '../api/axios'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Truck, MapPin, DollarSign, TrendingUp, Camera } from 'lucide-react'
+import { ArrowLeft, Truck, MapPin, DollarSign, TrendingUp, Camera, FileText, ShieldCheck, ClipboardCheck } from 'lucide-react'
+import { estadoVencimiento, fmtDia } from '../utils/vencimientos'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
@@ -137,6 +138,36 @@ export default function CamionResumen({ conductorMode }) {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* DOCUMENTOS DEL CAMIÓN */}
+      <div className="grid sm:grid-cols-3 gap-3">
+        {[
+          { icon: FileText, label: 'Matrícula', filas: [['Nro. licencia de tránsito', camion.matricula_nro], ['Fecha de matrícula', camion.matricula_fecha && fmtDia(camion.matricula_fecha)]] },
+          { icon: ShieldCheck, label: 'Seguro (SOAT / póliza)', vence: camion.seguro_vence, filas: [['Aseguradora', camion.seguro_aseguradora], ['Nro. póliza', camion.seguro_poliza], ['Vence', camion.seguro_vence && fmtDia(camion.seguro_vence)]] },
+          { icon: ClipboardCheck, label: 'Tecnomecánica', vence: camion.tecnomecanica_vence, filas: [['Nro. certificado', camion.tecnomecanica_nro], ['Vence', camion.tecnomecanica_vence && fmtDia(camion.tecnomecanica_vence)]] },
+        ].map(({ icon: Icon, label, vence, filas }) => {
+          const e = vence !== undefined ? estadoVencimiento(vence) : null
+          return (
+            <div key={label} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <div className="flex items-center gap-2">
+                  <Icon size={14} className="text-[#E87C1E]" />
+                  <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">{label}</span>
+                </div>
+                {e && <span className={`text-[11px] px-2 py-0.5 rounded-full font-semibold ${e.cls}`}>{e.texto}</span>}
+              </div>
+              <div className="space-y-1.5">
+                {filas.map(([k, v]) => (
+                  <div key={k} className="flex justify-between gap-3 text-sm">
+                    <span className="text-gray-400">{k}</span>
+                    <span className="font-semibold text-gray-800 text-right">{v || '—'}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })}
       </div>
 
       {/* HISTORIAL VIAJES */}

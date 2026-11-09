@@ -5,12 +5,24 @@ import { useAuth } from '../context/AuthContext'
 import Table from '../components/Table'
 import Modal from '../components/Modal'
 import toast from 'react-hot-toast'
-import { Truck, Plus, Pencil, Eye } from 'lucide-react'
+import { Truck, Plus, Pencil, Eye, FileText, ShieldCheck, ClipboardCheck } from 'lucide-react'
+import { estadoVencimiento, fmtDia } from '../utils/vencimientos'
 
 
-const empty = { marca: '', modelo: '', capacidad: '', estado: '1', fk_conductor: '', placa: '', foto_url: '' }
+const empty = { marca: '', modelo: '', capacidad: '', estado: '1', fk_conductor: '', placa: '', foto_url: '', matricula_nro: '', matricula_fecha: '', seguro_aseguradora: '', seguro_poliza: '', seguro_vence: '', tecnomecanica_nro: '', tecnomecanica_vence: '' }
 const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
+const docCampos = ['matricula_nro', 'matricula_fecha', 'seguro_aseguradora', 'seguro_poliza', 'seguro_vence', 'tecnomecanica_nro', 'tecnomecanica_vence']
+
+function BadgeDoc({ label, fecha }) {
+  const e = estadoVencimiento(fecha)
+  return (
+    <span title={fecha ? `${label}: ${fmtDia(fecha)}` : `${label}: sin registrar`}
+      className={`inline-flex items-center text-[11px] px-2 py-0.5 rounded-full font-semibold whitespace-nowrap ${e.cls}`}>
+      {label}: {e.nivel === 'vigente' ? fmtDia(fecha) : e.texto}
+    </span>
+  )
+}
 
 export default function Camiones() {
   const navigate = useNavigate()
@@ -26,14 +38,14 @@ export default function Camiones() {
   const abrir = (item = null) => {
     if (item) {
       setEditando(item.id_camion)
-      setForm({ marca: item.marca, modelo: item.modelo, capacidad: item.capacidad, estado: String(item.estado), fk_conductor: item.fk_conductor || '', placa: item.placa || '', foto_url: item.foto_url || '' })
+      setForm({ marca: item.marca, modelo: item.modelo, capacidad: item.capacidad, estado: String(item.estado), fk_conductor: item.fk_conductor || '', placa: item.placa || '', foto_url: item.foto_url || '', ...Object.fromEntries(docCampos.map(k => [k, item[k] ? String(item[k]).slice(0, 10) : ''])) })
     } else { setEditando(null); setForm(empty) }
     setModal(true)
   }
 
   const guardar = async () => {
     if (+form.capacidad <= 0) { toast.error('La capacidad debe ser mayor a 0'); return }
-    const body = { ...form, capacidad: +form.capacidad, estado: +form.estado, fk_conductor: form.fk_conductor ? +form.fk_conductor : null }
+    const body = { ...form, ...Object.fromEntries(docCampos.map(k => [k, form[k] || null])), capacidad: +form.capacidad, estado: +form.estado, fk_conductor: form.fk_conductor ? +form.fk_conductor : null }
     const ok = editando ? await actualizar(editando, body) : await crear(body)
     if (ok) { setModal(false); setForm(empty); setEditando(null) }
   }
@@ -59,7 +71,7 @@ export default function Camiones() {
       </div>
 
       <Table
-        columns={['#', 'Placa', 'Marca', 'Modelo', 'Capacidad', 'Estado', '']}
+        columns={['#', 'Placa', 'Marca', 'Modelo', 'Capacidad', 'Documentos', 'Estado', '']}
         data={data} loading={loading}
         renderRow={(c) => (<>
           <td className="px-4 py-3 text-xs text-gray-400">#{c.id_camion}</td>
@@ -67,6 +79,13 @@ export default function Camiones() {
           <td className="px-4 py-3 font-semibold text-sm text-gray-800">{c.marca}</td>
           <td className="px-4 py-3 text-sm text-gray-500">{c.modelo}</td>
           <td className="px-4 py-3 text-sm text-gray-500">{c.capacidad} ton</td>
+          <td className="px-4 py-3">
+            <div className="flex flex-col gap-1 items-start">
+              <BadgeDoc label="Seguro" fecha={c.seguro_vence} />
+              <BadgeDoc label="Tecno" fecha={c.tecnomecanica_vence} />
+              {c.matricula_nro && <span className="text-[11px] text-gray-400">Matrícula {c.matricula_nro}</span>}
+            </div>
+          </td>
           <td className="px-4 py-3">
             <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${c.estado ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-500'}`}>
               {c.estado ? 'Activo' : 'Inactivo'}
@@ -128,6 +147,53 @@ export default function Camiones() {
               <option value="">Sin asignar</option>
               {conductores.map(c => <option key={c.id_conductor} value={c.id_conductor}>{c.nombre}</option>)}
             </select>
+          </div>
+
+          {/* DOCUMENTOS */}
+          <div className="pt-2 border-t border-gray-100 space-y-4">
+            <div>
+              <p className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2"><FileText size={15} className="text-[#E87C1E]" /> Matrícula</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Nro. licencia de tránsito</label>
+                  <input value={form.matricula_nro} onChange={set('matricula_nro')} placeholder="Ej: 10012345678" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Fecha de matrícula</label>
+                  <input type="date" value={form.matricula_fecha} onChange={set('matricula_fecha')} className={inputCls} />
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2"><ShieldCheck size={15} className="text-[#E87C1E]" /> Seguro (SOAT / póliza)</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Aseguradora</label>
+                  <input value={form.seguro_aseguradora} onChange={set('seguro_aseguradora')} placeholder="Ej: Sura" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Nro. póliza</label>
+                  <input value={form.seguro_poliza} onChange={set('seguro_poliza')} placeholder="Ej: 123456789" className={inputCls} />
+                </div>
+              </div>
+              <div className="mt-3">
+                <label className={labelCls}>Vencimiento del seguro</label>
+                <input type="date" value={form.seguro_vence} onChange={set('seguro_vence')} className={inputCls} />
+              </div>
+            </div>
+            <div>
+              <p className="flex items-center gap-2 text-sm font-bold text-gray-700 mb-2"><ClipboardCheck size={15} className="text-[#E87C1E]" /> Revisión tecnomecánica</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className={labelCls}>Nro. certificado</label>
+                  <input value={form.tecnomecanica_nro} onChange={set('tecnomecanica_nro')} placeholder="Ej: RTM-0001" className={inputCls} />
+                </div>
+                <div>
+                  <label className={labelCls}>Vencimiento</label>
+                  <input type="date" value={form.tecnomecanica_vence} onChange={set('tecnomecanica_vence')} className={inputCls} />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </Modal>
