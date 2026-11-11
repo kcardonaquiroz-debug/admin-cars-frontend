@@ -9,17 +9,12 @@ import { MapPin, Plus, Pencil, Eye, Search } from 'lucide-react'
 
 const cop = (v) => '$' + Number(v).toLocaleString('es-CO')
 const fmtDate = (d) => d ? new Date(d).toLocaleDateString('es-CO') : '—'
-const empty = { fk_camion: '', fk_conductor: '', nro_guia: '', origen: '', destino: '', producto_carga: '', toneladas: '', fecha_salida: '', fecha_llegada: '', valor_flete: '', estado: 'en_curso' }
+const empty = { fk_camion: '', fk_conductor: '', nro_guia: '', origen: '', destino: '', producto_carga: '', toneladas: '', fecha_salida: '', fecha_llegada: '', valor_flete: '' }
 const inputCls = "w-full bg-white border border-gray-200 rounded-xl px-3 py-2.5 text-sm text-gray-800 placeholder-gray-300 outline-none focus:border-[#E87C1E] focus:ring-2 focus:ring-[#E87C1E]/10 transition"
 const labelCls = "block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5"
 
 const fmtTon = (t) => (t === null || t === undefined || t === '') ? null : `${Number(t).toLocaleString('es-CO')} t`
 
-const estadoBadge = {
-  en_curso: 'bg-blue-100 text-blue-600',
-  completado: 'bg-green-100 text-green-600',
-  cancelado: 'bg-red-100 text-red-500',
-}
 
 export default function Viajes() {
   const { usuario } = useAuth()
@@ -54,7 +49,6 @@ export default function Viajes() {
         fecha_salida: item.fecha_salida?.slice(0, 10) || '',
         fecha_llegada: item.fecha_llegada?.slice(0, 10) || '',
         valor_flete: item.valor_flete,
-        estado: item.estado || 'en_curso'
       })
     } else { setEditando(null); setForm(empty) }
     setModal(true)
@@ -110,7 +104,7 @@ export default function Viajes() {
       </div>
 
       <Table
-        columns={['#', 'Guía', 'Ruta', 'Carga', 'Fecha', 'Flete', 'Estado', '']}
+        columns={['#', 'Guía', 'Ruta', 'Carga', 'Fecha', 'Flete', '']}
         data={filtered} loading={loading}
         renderRow={(v) => (<>
           <td className="px-4 py-3 text-xs text-gray-400">#{v.id_viaje}</td>
@@ -122,11 +116,6 @@ export default function Viajes() {
           </td>
           <td className="px-4 py-3 text-sm text-gray-500">{fmtDate(v.fecha_salida)}</td>
           <td className="px-4 py-3 font-bold text-[#E87C1E] text-sm">{cop(v.valor_flete)}</td>
-          <td className="px-4 py-3">
-            <span className={`text-xs px-2.5 py-1 rounded-full font-semibold ${estadoBadge[v.estado] || 'bg-gray-100 text-gray-500'}`}>
-              {v.estado?.replace('_', ' ') || 'en curso'}
-            </span>
-          </td>
           <td className="px-4 py-3">
             <div className="flex gap-2">
               <button onClick={() => navigate(`/app/viajes/${v.id_viaje}`)}
@@ -166,19 +155,9 @@ export default function Viajes() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelCls}>Nro. Guía</label>
-              <input value={form.nro_guia} onChange={set('nro_guia')} placeholder="Ej: GU-001" className={inputCls} />
-            </div>
-            <div>
-              <label className={labelCls}>Estado</label>
-              <select value={form.estado} onChange={set('estado')} className={inputCls}>
-                <option value="en_curso">En curso</option>
-                <option value="completado">Completado</option>
-                <option value="cancelado">Cancelado</option>
-              </select>
-            </div>
+          <div>
+            <label className={labelCls}>Nro. Guía</label>
+            <input value={form.nro_guia} onChange={set('nro_guia')} placeholder="Ej: GU-001" className={inputCls} />
           </div>
           {[
             { label: 'Origen', key: 'origen', placeholder: 'Ciudad de origen' },

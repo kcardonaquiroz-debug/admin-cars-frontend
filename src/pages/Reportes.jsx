@@ -6,7 +6,7 @@ import toast from 'react-hot-toast'
 import GraficoMensual from '../components/GraficoMensual'
 import { descargarCSV, crearPDF, pdfSeccion, pdfIndicadores, pdfTabla, pdfGuardar } from '../utils/exportar'
 import {
-  FileBarChart, FileSpreadsheet, FileDown, Loader2, Truck, Users, Route, Receipt, ListChecks,
+  FileBarChart, FileSpreadsheet, FileDown, Loader2, Truck, Users, Route, Receipt,
   ClipboardList, ChevronLeft, ChevronRight, Search, FlaskConical, Trash2, Database
 } from 'lucide-react'
 
@@ -27,7 +27,6 @@ const rangos = {
   todo: () => ['', ''],
 }
 const etiquetasRango = { mes: 'Este mes', trimestre: 'Últimos 3 meses', anio: 'Este año', doce: 'Últimos 12 meses', todo: 'Todo' }
-const etiquetasEstado = { '': 'Todos (sin cancelados)', completado: 'Completados', en_curso: 'En curso', cancelado: 'Cancelados', todos: 'Todos (con cancelados)' }
 
 // Columnas comunes de los reportes agrupados
 const colsMetricas = [
@@ -57,10 +56,6 @@ const REPORTES = {
     titulo: 'Por mes', icon: ClipboardList, clave: 'por_mes', archivo: 'reporte_por_mes',
     columnas: [{ titulo: 'Mes', valor: 'mes', ancho: 1 }, ...colsMetricas],
   },
-  estado: {
-    titulo: 'Por estado', icon: ListChecks, clave: 'por_estado', archivo: 'reporte_por_estado',
-    columnas: [{ titulo: 'Estado', valor: (r) => (r.estado || '').replace('_', ' '), ancho: 1.2 }, ...colsMetricas],
-  },
   gastos: {
     titulo: 'Gastos por tipo', icon: Receipt, clave: 'gastos_por_tipo', archivo: 'reporte_gastos_por_tipo',
     columnas: [
@@ -83,7 +78,6 @@ const colsDetalle = [
   { titulo: 'Flete', valor: 'flete', alinear: 'derecha', fmt: cop, ancho: 1.1 },
   { titulo: 'Gastos', valor: 'gastos', alinear: 'derecha', fmt: cop, ancho: 1.1 },
   { titulo: 'Utilidad', valor: 'utilidad', alinear: 'derecha', fmt: cop, ancho: 1.1 },
-  { titulo: 'Estado', valor: (v) => (v.estado || '').replace('_', ' '), ancho: 0.9 },
 ]
 
 const valorCelda = (c, fila) => {
@@ -154,7 +148,7 @@ export default function Reportes() {
   const { data: camiones } = useCRUD('camiones')
   const { data: conductores } = useCRUD('conductores')
 
-  const [filtros, setFiltros] = useState(() => { const [desde, hasta] = rangos.doce(); return { desde, hasta, camion: '', conductor: '', estado: '' } })
+  const [filtros, setFiltros] = useState(() => { const [desde, hasta] = rangos.doce(); return { desde, hasta, camion: '', conductor: '' } })
   const [rangoActivo, setRangoActivo] = useState('doce')
   const [reporte, setReporte] = useState(null)
   const [detalle, setDetalle] = useState([])
@@ -203,14 +197,13 @@ export default function Reportes() {
     const partes = [filtros.desde || filtros.hasta ? `${fmtDia(filtros.desde) || 'inicio'} a ${fmtDia(filtros.hasta) || 'hoy'}` : 'Todo el historial']
     if (filtros.camion) partes.push(`Camión ${camiones.find(c => String(c.id_camion) === String(filtros.camion))?.placa || filtros.camion}`)
     if (filtros.conductor) partes.push(conductores.find(c => String(c.id_conductor) === String(filtros.conductor))?.nombre || 'Conductor')
-    partes.push(etiquetasEstado[filtros.estado])
     return partes.join(' · ')
   }, [filtros, camiones, conductores])
 
   const detalleFiltrado = useMemo(() => {
     if (!busqueda) return detalle
     const q = busqueda.toLowerCase()
-    return detalle.filter(v => [v.nro_guia, v.origen, v.destino, v.placa, v.conductor, v.producto_carga, v.estado]
+    return detalle.filter(v => [v.nro_guia, v.origen, v.destino, v.placa, v.conductor, v.producto_carga]
       .some(x => x && String(x).toLowerCase().includes(q)))
   }, [detalle, busqueda])
   const totalPaginas = Math.max(1, Math.ceil(detalleFiltrado.length / POR_PAGINA))
@@ -323,7 +316,7 @@ export default function Reportes() {
             </button>
           ))}
         </div>
-        <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <div><label className={labelCls}>Desde</label><input type="date" value={filtros.desde} onChange={setFiltro('desde')} className={inputCls} /></div>
           <div><label className={labelCls}>Hasta</label><input type="date" value={filtros.hasta} onChange={setFiltro('hasta')} className={inputCls} /></div>
           <div>
@@ -338,12 +331,6 @@ export default function Reportes() {
             <select value={filtros.conductor} onChange={setFiltro('conductor')} className={inputCls}>
               <option value="">Todos</option>
               {conductores.map(c => <option key={c.id_conductor} value={c.id_conductor}>{c.nombre}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className={labelCls}>Estado</label>
-            <select value={filtros.estado} onChange={setFiltro('estado')} className={inputCls}>
-              {Object.entries(etiquetasEstado).map(([k, l]) => <option key={k} value={k}>{l}</option>)}
             </select>
           </div>
         </div>

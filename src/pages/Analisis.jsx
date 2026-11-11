@@ -3,7 +3,7 @@ import api from '../api/axios'
 import {
   BarChart3, TrendingUp, TrendingDown, DollarSign, Truck,
   Users, MapPin, Wrench, Fuel, Calendar, AlertTriangle,
-  Award, PieChart, Activity, Route, Clock, Percent,
+  Award, PieChart, Activity, Route, Percent,
   CreditCard, FileText, ListChecks, RefreshCw
 } from 'lucide-react'
 
@@ -166,9 +166,9 @@ export default function Analisis() {
         <SectionTitle icon={MapPin} title="Viajes" />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <KpiCard icon={Route} label="Total viajes" value={viajes.total_viajes} color="text-blue-500" bg="bg-blue-50" border="border-blue-100" />
-          <KpiCard icon={Clock} label="En curso" value={viajes.viajes_en_curso} color="text-orange-500" bg="bg-orange-50" border="border-orange-100" />
-          <KpiCard icon={Award} label="Completados" value={viajes.viajes_completados} color="text-green-500" bg="bg-green-50" border="border-green-100" />
-          <KpiCard icon={AlertTriangle} label="Pendientes" value={viajes.viajes_pendientes} color="text-gray-500" bg="bg-gray-50" border="border-gray-200" />
+          <KpiCard icon={TrendingUp} label="Flete promedio por viaje" value={cop(rf.promedio_flete_por_viaje)} color="text-orange-500" bg="bg-orange-50" border="border-orange-100" />
+          <KpiCard icon={TrendingDown} label="Gasto promedio por viaje" value={cop(rf.promedio_gasto_por_viaje)} color="text-red-500" bg="bg-red-50" border="border-red-100" />
+          <KpiCard icon={DollarSign} label="Utilidad promedio por viaje" value={cop(rf.promedio_flete_por_viaje - rf.promedio_gasto_por_viaje)} color="text-green-500" bg="bg-green-50" border="border-green-100" />
         </div>
         {mejorRuta && (
           <div className="mt-3 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-2xl p-4 flex items-center justify-between">
