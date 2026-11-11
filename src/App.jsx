@@ -15,6 +15,7 @@ import Liquidacion from './pages/Liquidacion'
 import Analisis from './pages/Analisis'
 import LandingPage from './pages/LandingPage'
 import Usuarios from './pages/Usuarios'
+import Reportes from './pages/Reportes'
 
 function HomeRedirect() {
   const { usuario } = useAuth()
@@ -86,6 +87,7 @@ export default function App() {
         <Route path="facturas" element={<AdminRoute><Facturas /></AdminRoute>} />
         <Route path="mantenimientos" element={<AdminRoute><Mantenimientos /></AdminRoute>} />
         <Route path="analisis" element={<AdminRoute><Analisis /></AdminRoute>} />
+        <Route path="reportes" element={<AdminRoute><Reportes /></AdminRoute>} />
 
         {/* Ruta exclusiva del Super Administrador */}
         <Route path="usuarios" element={<SuperAdminRoute><Usuarios /></SuperAdminRoute>} />

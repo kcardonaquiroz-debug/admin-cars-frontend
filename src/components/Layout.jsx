@@ -5,7 +5,7 @@ import AlertasCampana from './AlertasCampana'
 import {
   LayoutDashboard, Truck, Users, MapPin,
   DollarSign, FileText, Wrench, BarChart3,
-  LogOut, Menu, X, UserCog
+  LogOut, Menu, X, UserCog, FileBarChart
 } from 'lucide-react'
 
 const navAdmin = [
@@ -17,6 +17,7 @@ const navAdmin = [
   { to: '/app/facturas', label: 'Facturas', icon: FileText },
   { to: '/app/mantenimientos', label: 'Mantenimientos', icon: Wrench },
   { to: '/app/analisis', label: 'Análisis', icon: BarChart3 },
+  { to: '/app/reportes', label: 'Reportes', icon: FileBarChart },
 ]
 
 const navConductor = [
